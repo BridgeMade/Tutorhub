@@ -4,6 +4,8 @@ import { Calendar, Clock, Users, Search, Filter, Plus, Edit2, X, AlertCircle } f
 import { AdminBookingModal } from './AdminBookingModal';
 import { AdminCalendarView } from './AdminCalendarView';
 import { BulkBookingModal } from './BulkBookingModal';
+import { CancellationWarningModal } from '../sessions/CancellationWarningModal';
+import { sessionCancellationService } from '../../services/sessionCancellationService';
 
 interface Session {
   id: string;
@@ -41,10 +43,21 @@ export const SessionManagement: React.FC = () => {
   const [showBulkBookingModal, setShowBulkBookingModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showCancellationModal, setShowCancellationModal] = useState(false);
+  const [sessionToCancel, setSessionToCancel] = useState<Session | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string>('');
 
   useEffect(() => {
     loadSessions();
+    getCurrentUser();
   }, []);
+
+  const getCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCurrentUserId(user.id);
+    }
+  };
 
   useEffect(() => {
     filterSessions();
@@ -151,8 +164,48 @@ export const SessionManagement: React.FC = () => {
     }
   };
 
+  const handleCancelSession = (session: Session) => {
+    setSessionToCancel(session);
+    setShowCancellationModal(true);
+  };
+
+  const handleConfirmCancellation = async (reason: string, isEmergency: boolean) => {
+    if (!sessionToCancel || !currentUserId) return;
+
+    try {
+      const result = await sessionCancellationService.cancelSessionWithLossTracking(
+        sessionToCancel.id,
+        currentUserId,
+        reason,
+        isEmergency,
+        currentUserId // Admin is verifying their own emergency cancellation
+      );
+
+      // Update local state
+      setSessions(prev =>
+        prev.map(session =>
+          session.id === sessionToCancel.id
+            ? { ...session, status: 'cancelled' as any, updated_at: new Date().toISOString() }
+            : session
+        )
+      );
+
+      setShowCancellationModal(false);
+      setSessionToCancel(null);
+
+      if (result.session_lost) {
+        alert(`Session cancelled. ${result.cancellation_type === 'student_late' ? 'Student will lose this session due to short notice.' : 'Session loss recorded.'}`);
+      } else {
+        alert('Session cancelled successfully');
+      }
+    } catch (error) {
+      console.error('Error cancelling session:', error);
+      alert('Failed to cancel session');
+    }
+  };
+
   const handleDeleteSession = async (sessionId: string) => {
-    if (!confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
+    if (!window.confirm('Are you sure you want to delete this session? This action cannot be undone.')) {
       return;
     }
 
@@ -386,6 +439,15 @@ export const SessionManagement: React.FC = () => {
                             >
                               <Edit2 className="w-4 h-4" />
                             </button>
+                            {session.status !== 'cancelled' && (
+                              <button
+                                onClick={() => handleCancelSession(session)}
+                                className="text-yellow-600 hover:text-yellow-900"
+                                title="Cancel Session"
+                              >
+                                <AlertCircle className="w-4 h-4" />
+                              </button>
+                            )}
                             <button
                               onClick={() => handleDeleteSession(session.id)}
                               className="text-red-600 hover:text-red-900"
@@ -507,6 +569,27 @@ export const SessionManagement: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Cancellation Warning Modal */}
+      {showCancellationModal && sessionToCancel && (
+        <CancellationWarningModal
+          isOpen={showCancellationModal}
+          onClose={() => {
+            setShowCancellationModal(false);
+            setSessionToCancel(null);
+          }}
+          onConfirm={handleConfirmCancellation}
+          lessonId={sessionToCancel.id}
+          currentUserId={currentUserId}
+          lessonDetails={{
+            scheduled_at: sessionToCancel.scheduled_at,
+            student_name: sessionToCancel.student_profile?.full_name,
+            tutor_name: sessionToCancel.tutor_profile?.full_name,
+            subject_name: sessionToCancel.subject?.name,
+            duration_minutes: sessionToCancel.duration_minutes
+          }}
+        />
       )}
     </div>
   );

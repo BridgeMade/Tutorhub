@@ -168,7 +168,7 @@ export const AdminBookingModal: React.FC<AdminBookingModalProps> = ({
         );
 
         if (!validation.isValid) {
-          if (confirm(`Booking validation failed: ${validation.message}\\n\\nDo you want to override as admin?`)) {
+          if (window.confirm(`Booking validation failed: ${validation.message}\\n\\nDo you want to override as admin?`)) {
             setValue('admin_override', true);
           } else {
             setLoading(false);

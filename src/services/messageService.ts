@@ -329,8 +329,10 @@ export const messageService = {
   subscribeToMessages(conversationId: string, onNewMessage: (message: MessageRecord) => void) {
     console.log('🔔 Subscribing to real-time messages for conversation:', conversationId);
     
-    // Create unique channel name to avoid conflicts
-    const channelName = `messages-${conversationId}-${Date.now()}`;
+    // Create unique channel name with random suffix to avoid conflicts
+    const channelName = `messages-${conversationId}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    
+    console.log('🔧 Creating message subscription channel:', channelName);
     
     const subscription = supabase
       .channel(channelName)
@@ -343,23 +345,36 @@ export const messageService = {
           filter: `conversation_id=eq.${conversationId}`
         },
         (payload) => {
-          console.log('🆕 Supabase real-time message received:', payload.new);
+          console.log('🆕 Supabase real-time message received for conversation:', conversationId);
           console.log('🔍 Payload event type:', payload.eventType);
-          console.log('🔍 Message for conversation:', conversationId);
           console.log('🔍 Full payload:', payload);
-          console.log('🔍 Payload new message data:', payload.new);
+          console.log('🔍 Message data:', payload.new);
+          console.log('🔍 Message sender:', payload.new?.sender_id);
+          console.log('🔍 Message content:', payload.new?.content);
+          console.log('🔍 Channel name:', channelName);
           
           // Ensure we have valid message data before calling callback
           if (payload.new && payload.new.id && payload.new.content) {
-            console.log('✅ Valid message data, calling onNewMessage callback');
+            console.log('✅ Valid message data detected, preparing callback');
             
-            // Add small delay to ensure database consistency
+            // Add small delay to ensure database consistency, then execute callback
             setTimeout(() => {
-              console.log('⏰ Executing onNewMessage callback with delay');
-              onNewMessage(payload.new as MessageRecord);
+              console.log('⏰ Executing onNewMessage callback for conversation:', conversationId);
+              console.log('📤 Callback payload:', payload.new);
+              try {
+                onNewMessage(payload.new as MessageRecord);
+                console.log('✅ onNewMessage callback executed successfully');
+              } catch (error) {
+                console.error('❌ Error in onNewMessage callback:', error);
+              }
             }, 50);
           } else {
-            console.error('❌ Invalid message data received:', payload.new);
+            console.error('❌ Invalid message data received, skipping callback:', {
+              hasPayloadNew: !!payload.new,
+              hasId: !!payload.new?.id,
+              hasContent: !!payload.new?.content,
+              payloadNew: payload.new
+            });
           }
         }
       )
@@ -441,11 +456,26 @@ export const messageService = {
             .single();
             
           if (conversation && (conversation.student_id === userId || conversation.tutor_id === userId)) {
-            console.log('📬 Message affects current user, refreshing conversations...');
+            console.log('📬 Global message affects current user, refreshing conversations...');
+            console.log('🔍 Global message details:', {
+              conversationId: newMessage.conversation_id,
+              senderId: newMessage.sender_id,
+              currentUserId: userId,
+              isFromOtherUser: newMessage.sender_id !== userId,
+              studentId: conversation.student_id,
+              tutorId: conversation.tutor_id
+            });
+            
             // Minimal delay for database consistency
             setTimeout(() => {
               onMessageUpdate();
             }, 100);
+          } else {
+            console.log('📭 Global message does not affect current user:', {
+              conversationExists: !!conversation,
+              messageConversationId: newMessage.conversation_id,
+              currentUserId: userId
+            });
           }
         }
       )

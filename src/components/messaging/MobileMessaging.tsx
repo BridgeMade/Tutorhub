@@ -121,16 +121,23 @@ export const MobileMessaging: React.FC<MobileMessagingProps> = ({
         
         try {
           const senderProfile = await userService.getUserProfile(newMessage.sender_id);
-          senderName = senderProfile?.full_name || 'Unknown User';
+          senderName = senderProfile?.full_name || senderProfile?.email || 'Unknown User';
           
-          // Determine sender role based on who they are relative to current user
-          if (newMessage.sender_id === currentUserId) {
-            senderRole = userRole;
+          // Get the actual role from the sender's profile for more accurate role determination
+          if (senderProfile?.role) {
+            senderRole = senderProfile.role as 'student' | 'tutor' | 'admin';
           } else {
-            senderRole = userRole === 'student' ? 'tutor' : 'student';
+            // Fallback: Determine sender role based on who they are relative to current user
+            if (newMessage.sender_id === currentUserId) {
+              senderRole = userRole;
+            } else {
+              senderRole = userRole === 'student' ? 'tutor' : 'student';
+            }
           }
         } catch (error) {
           console.error('❌ Error getting sender profile:', error);
+          // Fallback role determination
+          senderRole = newMessage.sender_id === currentUserId ? userRole : (userRole === 'student' ? 'tutor' : 'student');
         }
         
         // Use current state instead of stale closure
@@ -141,40 +148,44 @@ export const MobileMessaging: React.FC<MobileMessagingProps> = ({
           if (currentSelectedConversation && currentSelectedConversation.id === conversationId) {
             console.log('✅ Message is for current conversation, processing...');
             
-            // Add messages from other users (avoid duplicates for own messages)
-            if (newMessage.sender_id !== currentUserId) {
-              console.log('✅ Message from other user, adding to chat...');
+            // Process all new messages (both from self and others) to ensure delivery
+            console.log('✅ Processing new message for chat view...');
+            
+            const formattedMessage: Message = {
+              id: newMessage.id,
+              senderId: newMessage.sender_id,
+              senderName: senderName,
+              senderRole: senderRole,
+              content: newMessage.content,
+              timestamp: newMessage.created_at,
+              messageType: newMessage.message_type,
+              readAt: newMessage.read_at,
+              edited: !!newMessage.edited_at
+            };
+            
+            console.log('📨 About to add formatted message to chat view:', formattedMessage);
+            console.log('🔍 Message is from other user:', newMessage.sender_id !== currentUserId);
+            
+            // Force state update with functional update to ensure it happens
+            setMessages(prevMessages => {
+              console.log('🔍 Previous messages count:', prevMessages.length);
+              const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
+              if (messageExists) {
+                console.log('⚠️ Message already exists, skipping');
+                return prevMessages;
+              }
               
-              const formattedMessage: Message = {
-                id: newMessage.id,
-                senderId: newMessage.sender_id,
-                senderName: senderName,
-                senderRole: senderRole,
-                content: newMessage.content,
-                timestamp: newMessage.created_at,
-                messageType: newMessage.message_type,
-                readAt: newMessage.read_at,
-                edited: !!newMessage.edited_at
-              };
-              
-              console.log('📨 About to add formatted message to chat view:', formattedMessage);
-              
-              // Force state update with functional update to ensure it happens
-              setMessages(prevMessages => {
-                console.log('🔍 Previous messages count:', prevMessages.length);
-                const messageExists = prevMessages.some(msg => msg.id === newMessage.id);
-                if (messageExists) {
-                  console.log('⚠️ Message already exists, skipping');
-                  return prevMessages;
-                }
-                console.log('✅ Adding new message to chat, new count will be:', prevMessages.length + 1);
+              // Only add messages from other users in real-time (own messages are added when sending)
+              if (newMessage.sender_id !== currentUserId) {
+                console.log('✅ Adding message from other user to chat, new count will be:', prevMessages.length + 1);
                 const updatedMessages = [...prevMessages, formattedMessage];
                 console.log('🎯 Updated messages array:', updatedMessages);
                 return updatedMessages;
-              });
-            } else {
-              console.log('⚠️ Skipping own message to avoid duplicate');
-            }
+              } else {
+                console.log('⚠️ Skipping own message to avoid duplicate (already added when sending)');
+                return prevMessages;
+              }
+            });
           } else {
             console.log('⚠️ Message not for current conversation or no conversation selected');
             console.log('🔍 Conversation ID match:', currentSelectedConversation?.id === conversationId);
@@ -285,7 +296,7 @@ export const MobileMessaging: React.FC<MobileMessagingProps> = ({
     setTimeout(() => {
       console.log('🔔 Setting up message subscription after conversation selection');
       setupMessageSubscription(conversation.id);
-    }, 200);
+    }, 50); // Reduced delay for faster real-time response
     
     // Mark conversation as read
     setConversations(prev => 

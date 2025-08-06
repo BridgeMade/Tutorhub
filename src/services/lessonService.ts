@@ -189,6 +189,30 @@ export const lessonService = {
     return data;
   },
 
+  // Cancel lesson with loss tracking
+  async cancelLesson(lessonId: string, userId: string, reason: string, isEmergency: boolean = false): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .rpc('cancel_session_with_loss_tracking', {
+          p_lesson_id: lessonId,
+          p_cancelled_by: userId,
+          p_reason: reason,
+          p_is_emergency: isEmergency,
+          p_verified_by: null
+        });
+
+      if (error) {
+        console.error('Error cancelling lesson:', error);
+        throw error;
+      }
+
+      return data && data.length > 0 ? data[0] : null;
+    } catch (error) {
+      console.error('Error in cancelLesson:', error);
+      throw error;
+    }
+  },
+
   // Get lesson statistics
   async getLessonStats(userId: string, userRole: 'student' | 'tutor' | 'admin') {
     console.log('🔍 Calculating lesson stats for user:', userId, userRole);

@@ -1,7 +1,7 @@
 {
-  "short_name": "TutorHub",
-  "name": "TutorHub - Student Lesson Management",
-  "description": "Manage student lessons, schedules, and progress tracking",
+  "short_name": "TutorKai",
+  "name": "TutorKai - The Future of Tutoring Business Management",
+  "description": "Next-generation intelligent platform revolutionizing tutoring business operations",
   "icons": [
     {
       "src": "favicon.ico",
@@ -21,7 +21,7 @@
   ],
   "start_url": ".",
   "display": "standalone",
-  "theme_color": "#3b82f6",
+  "theme_color": "#6366f1",
   "background_color": "#ffffff",
   "orientation": "portrait-primary"
 }

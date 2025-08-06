@@ -1,0 +1,375 @@
+name: TutorHub CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18.x'
+  CLOUDFLARE_PROJECT_NAME: 'tutorhub'
+
+jobs:
+  # ===========================================
+  # CODE QUALITY AND TESTING
+  # ===========================================
+  quality-gate:
+    name: Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: './package-lock.json'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Lint Code
+        run: npm run lint
+        continue-on-error: false
+
+      - name: 🏗️ Type Check
+        run: npx tsc --noEmit
+        continue-on-error: false
+
+      - name: 🏗️ Build Application
+        run: npm run build
+        env:
+          CI: false # Treat warnings as warnings, not errors
+
+      - name: 📊 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+          retention-days: 7
+
+  # ===========================================
+  # COMPREHENSIVE TESTING
+  # ===========================================
+  test-suite:
+    name: Test Suite
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      matrix:
+        test-type: [unit, components, integration, performance]
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 Run ${{ matrix.test-type }} Tests
+        run: npm run test:${{ matrix.test-type }}
+        env:
+          CI: true
+
+      - name: 📊 Upload Test Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ matrix.test-type }}
+          path: |
+            coverage/
+            test-results/
+          retention-days: 7
+
+  # ===========================================
+  # SECURITY SCANNING
+  # ===========================================
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🔒 Audit Dependencies
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: 🔍 Security Scan with Snyk
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        continue-on-error: true
+
+  # ===========================================
+  # PERFORMANCE TESTING
+  # ===========================================
+  performance-test:
+    name: Performance Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [quality-gate]
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 📥 Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts
+          path: build/
+
+      - name: 🚀 Start Test Server
+        run: |
+          npm install -g serve
+          serve -s build -l 3000 &
+          sleep 10
+        
+      - name: 📈 Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v10
+        with:
+          urls: |
+            http://localhost:3000
+            http://localhost:3000/dashboard
+            http://localhost:3000/sessions
+          configPath: '.lighthouserc.json'
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  # ===========================================
+  # STAGING DEPLOYMENT
+  # ===========================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [quality-gate, test-suite, security-scan]
+    if: github.ref == 'refs/heads/develop'
+    environment: staging
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🏗️ Build for Staging
+        run: npm run build
+        env:
+          REACT_APP_ENVIRONMENT: staging
+          REACT_APP_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+          REACT_APP_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+          REACT_APP_EMAIL_API_KEY: ${{ secrets.STAGING_EMAIL_API_KEY }}
+
+      - name: 🚀 Deploy to Cloudflare Pages (Staging)
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}-staging
+          directory: build
+          wranglerVersion: '3'
+
+      - name: 🧪 Run Staging Smoke Tests
+        run: |
+          sleep 30 # Wait for deployment
+          curl -f https://staging.tutorhub.co.za || exit 1
+          # Add more health checks as needed
+
+  # ===========================================
+  # PRODUCTION DEPLOYMENT
+  # ===========================================
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: [quality-gate, test-suite, security-scan, performance-test]
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Install Dependencies
+        run: npm ci
+
+      - name: 🏗️ Build for Production
+        run: npm run build
+        env:
+          REACT_APP_ENVIRONMENT: production
+          REACT_APP_SUPABASE_URL: ${{ secrets.PROD_SUPABASE_URL }}
+          REACT_APP_SUPABASE_ANON_KEY: ${{ secrets.PROD_SUPABASE_ANON_KEY }}
+          REACT_APP_EMAIL_API_KEY: ${{ secrets.PROD_EMAIL_API_KEY }}
+          GENERATE_SOURCEMAP: false
+
+      - name: 🚀 Deploy to Cloudflare Pages (Production)
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: ${{ env.CLOUDFLARE_PROJECT_NAME }}
+          directory: build
+          wranglerVersion: '3'
+
+      - name: 🧪 Run Production Health Checks
+        run: |
+          sleep 60 # Wait for deployment and CDN propagation
+          curl -f https://tutorhub.co.za || exit 1
+          curl -f https://tutorhub.co.za/api/health || exit 1
+
+      - name: 📊 Update Monitoring
+        run: |
+          # Send deployment notification to monitoring service
+          curl -X POST "${{ secrets.MONITORING_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "event": "deployment",
+              "environment": "production",
+              "version": "${{ github.sha }}",
+              "status": "success",
+              "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"
+            }'
+
+  # ===========================================
+  # DATABASE MIGRATIONS
+  # ===========================================
+  database-migration:
+    name: Database Migration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.ref == 'refs/heads/main'
+    needs: [deploy-production]
+    environment: production
+    
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 🗄️ Run Database Migrations
+        run: |
+          # Check if there are pending migrations
+          if [ -d "src/database/migrations" ] && [ "$(ls -A src/database/migrations)" ]; then
+            echo "🔄 Running database migrations..."
+            # This would typically connect to Supabase and run migrations
+            # For now, we'll just log the intent
+            echo "Database migrations would be applied here"
+            
+            # Example: Apply migrations via Supabase CLI or API
+            # supabase db push --project-ref ${{ secrets.SUPABASE_PROJECT_REF }}
+          else
+            echo "✅ No pending database migrations"
+          fi
+
+  # ===========================================
+  # POST-DEPLOYMENT TASKS
+  # ===========================================
+  post-deployment:
+    name: Post-Deployment Tasks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: github.ref == 'refs/heads/main'
+    needs: [deploy-production, database-migration]
+    
+    steps:
+      - name: 🔔 Notify Team
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          text: |
+            🚀 TutorHub Production Deployment Complete!
+            
+            • Version: ${{ github.sha }}
+            • Environment: Production
+            • URL: https://tutorhub.co.za
+            • Deployed by: ${{ github.actor }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
+
+      - name: 📈 Update Status Badge
+        run: |
+          echo "Deployment completed successfully at $(date)"
+
+  # ===========================================
+  # CLEANUP
+  # ===========================================
+  cleanup:
+    name: Cleanup
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    if: always()
+    needs: [quality-gate, test-suite, security-scan, performance-test, deploy-staging, deploy-production]
+    
+    steps:
+      - name: 🧹 Cleanup Artifacts
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+            
+            // Keep only the latest 10 artifacts per workflow
+            const oldArtifacts = artifacts.data.artifacts.slice(10);
+            
+            for (const artifact of oldArtifacts) {
+              await github.rest.actions.deleteArtifact({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                artifact_id: artifact.id,
+              });
+            }

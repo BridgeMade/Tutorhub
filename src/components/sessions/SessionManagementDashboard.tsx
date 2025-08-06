@@ -3,6 +3,7 @@ import { lessonService, LessonWithDetails } from '../../services/lessonService';
 import { sessionManagementService } from '../../services/sessionManagementService';
 import { RescheduleRequestModal } from './RescheduleRequestModal';
 import { RescheduleRequestsList } from './RescheduleRequestsList';
+import { SessionResourceManager } from './SessionResourceManager';
 
 interface SessionManagementDashboardProps {
   userId: string;
@@ -18,6 +19,7 @@ export const SessionManagementDashboard: React.FC<SessionManagementDashboardProp
   const [activeTab, setActiveTab] = useState<'upcoming' | 'requests'>('upcoming');
   const [showRescheduleModal, setShowRescheduleModal] = useState(false);
   const [selectedSession, setSelectedSession] = useState<LessonWithDetails | null>(null);
+  const [selectedSessionForResources, setSelectedSessionForResources] = useState<LessonWithDetails | null>(null);
 
   useEffect(() => {
     loadSessions();
@@ -249,6 +251,13 @@ export const SessionManagementDashboard: React.FC<SessionManagementDashboardProp
                   )}
                   
                   <button
+                    onClick={() => setSelectedSessionForResources(session)}
+                    className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
+                  >
+                    Resources
+                  </button>
+                  
+                  <button
                     onClick={() => {/* TODO: Implement session details view */}}
                     className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 font-medium"
                   >
@@ -289,6 +298,43 @@ export const SessionManagementDashboard: React.FC<SessionManagementDashboardProp
             setActiveTab('requests'); // Switch to requests tab to see the new request
           }}
         />
+      )}
+
+      {/* Session Resources Modal */}
+      {selectedSessionForResources && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h2 className="text-xl font-semibold text-gray-900">
+                Session Resources - {selectedSessionForResources.subject_name}
+              </h2>
+              <button
+                onClick={() => setSelectedSessionForResources(null)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            <div className="p-6">
+              <SessionResourceManager
+                sessionId={selectedSessionForResources.id}
+                sessionDetails={{
+                  subject_name: selectedSessionForResources.subject_name || 'Unknown Subject',
+                  student_name: selectedSessionForResources.student_name || 'Unknown Student',
+                  tutor_name: selectedSessionForResources.tutor_name || 'Unknown Tutor',
+                  scheduled_at: selectedSessionForResources.scheduled_at,
+                  duration_minutes: selectedSessionForResources.duration_minutes
+                }}
+                currentUserId={userId}
+                userRole={userRole}
+                onResourceUpdate={loadSessions}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

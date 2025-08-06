@@ -5,8 +5,10 @@ import { z } from 'zod';
 import { supabase } from '../../lib/supabase';
 import { assignmentService, AssignmentWithDetails } from '../../services/assignmentService';
 import { availabilityService, TimeSlot } from '../../services/availabilityService';
+import { resourceRecommendationService } from '../../services/resourceRecommendationService';
 import { getSACurrentTime, formatZAR } from '../../utils/saFormatting';
 import { AvailabilityCalendar } from '../calendar/AvailabilityCalendar';
+import { BookOpen, Clock, Download, Lightbulb } from 'lucide-react';
 
 const bookSessionSchema = z.object({
   subject: z.string().min(1, 'Subject is required'),
@@ -52,6 +54,8 @@ export const BookSessionModal: React.FC<BookSessionModalProps> = ({
   const [selectedSlot, setSelectedSlot] = useState<{ slot: TimeSlot; date: Date } | null>(null);
   const [showCalendar, setShowCalendar] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [resourceRecommendations, setResourceRecommendations] = useState<any[]>([]);
+  const [showRecommendations, setShowRecommendations] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, watch } = useForm<BookSessionFormData>({
     resolver: zodResolver(bookSessionSchema),
@@ -75,6 +79,7 @@ export const BookSessionModal: React.FC<BookSessionModalProps> = ({
       setSelectedTutor('');
       setShowCalendar(false);
       setSelectedSlot(null);
+      loadResourceRecommendations(watchedSubject);
     }
   }, [watchedSubject]);
 
@@ -141,6 +146,30 @@ export const BookSessionModal: React.FC<BookSessionModalProps> = ({
     
     setTutors(assignedTutors);
     console.log('🔍 BookSessionModal: Available tutors:', assignedTutors);
+  };
+
+  const loadResourceRecommendations = async (subjectName: string) => {
+    try {
+      // Get subject ID for recommendations
+      const { data: subjectData } = await supabase
+        .from('subjects')
+        .select('id')
+        .eq('name', subjectName)
+        .single();
+
+      if (subjectData) {
+        const recommendations = await resourceRecommendationService.getSubjectRecommendations(
+          studentId,
+          subjectData.id,
+          undefined,
+          4
+        );
+        setResourceRecommendations(recommendations);
+        setShowRecommendations(recommendations.length > 0);
+      }
+    } catch (error) {
+      console.error('Error loading resource recommendations:', error);
+    }
   };
 
   const handleSlotClick = (slot: TimeSlot, date: Date) => {
@@ -364,6 +393,53 @@ export const BookSessionModal: React.FC<BookSessionModalProps> = ({
               placeholder="Any specific topics or questions you'd like to focus on..."
             />
           </div>
+
+          {/* Resource Recommendations */}
+          {showRecommendations && resourceRecommendations.length > 0 && (
+            <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+              <div className="flex items-center space-x-2 mb-3">
+                <Lightbulb className="h-5 w-5 text-orange-600" />
+                <h4 className="text-sm font-medium text-orange-900">
+                  Recommended Resources for {selectedSubject}
+                </h4>
+              </div>
+              <p className="text-xs text-orange-700 mb-3">
+                Here are some resources that might help you prepare for this session:
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {resourceRecommendations.slice(0, 4).map((resource) => (
+                  <div key={resource.id} className="bg-white rounded-md p-3 border border-orange-200">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h5 className="text-sm font-medium text-gray-900 mb-1">
+                          {resource.title}
+                        </h5>
+                        <p className="text-xs text-gray-600 mb-2 line-clamp-2">
+                          {resource.description}
+                        </p>
+                        <div className="flex items-center space-x-2 text-xs text-gray-500">
+                          <span className={`px-1.5 py-0.5 rounded ${
+                            resource.difficulty_level === 'beginner' ? 'bg-green-100 text-green-800' :
+                            resource.difficulty_level === 'intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {resource.difficulty_level}
+                          </span>
+                          <div className="flex items-center space-x-1">
+                            <Clock className="h-3 w-3" />
+                            <span>{resource.estimated_time_minutes}m</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-3 text-xs text-orange-600">
+                💡 Your tutor can assign specific resources when confirming the session
+              </div>
+            </div>
+          )}
 
           <div className="flex space-x-3 pt-4">
             <button

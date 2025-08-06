@@ -2,6 +2,8 @@ import { supabase } from '../lib/supabase';
 import { notificationService } from './notificationService';
 import { timeoutService } from './timeoutService';
 import { auditTrailService } from './auditTrailService';
+import { emailService } from './emailService';
+import { handleError } from '../utils/errorHandler';
 
 export interface RescheduleRequest {
   id: string;
@@ -167,6 +169,29 @@ export const sessionManagementService = {
             reason: requestData.reason
           });
 
+          // Send email notification for reschedule request
+          try {
+            const recipientEmail = isStudent ? participants.tutor?.email : participants.student?.email;
+            if (recipientEmail) {
+              await emailService.sendRescheduleRequestEmail(
+                recipientEmail,
+                isStudent ? 'tutor' : 'student',
+                {
+                  sessionSubject: participants.subject?.name || 'Unknown Subject',
+                  originalDate: lesson.scheduled_at,
+                  requestedDate: requestData.proposedDate?.toISOString() || lesson.scheduled_at,
+                  reason: requestData.reason,
+                  requesterName: requesterName || 'Unknown User'
+                }
+              );
+            }
+          } catch (emailError) {
+            handleError(emailError, {
+              operation: 'sendRescheduleRequestEmail',
+              requestId: request.id
+            });
+          }
+
           console.log('📧 Reschedule notification sent successfully');
         }
       } catch (notificationError) {
@@ -322,6 +347,32 @@ export const sessionManagementService = {
             relatedRequestId: requestId,
             customPriority: 'medium'
           });
+
+          // Send email notification for reschedule response
+          try {
+            const requesterEmail = isStudent ? participants.student?.email : participants.tutor?.email;
+            if (requesterEmail) {
+              const emailTemplate = response === 'approved' ? 'RESCHEDULE_APPROVED' : 'RESCHEDULE_DECLINED';
+              await emailService.sendEmail({
+                to: requesterEmail,
+                template: emailTemplate as any,
+                templateData: {
+                  recipientName: recipientName || 'Unknown User',
+                  sessionSubject: participants.subject?.name || 'Unknown Subject',
+                  originalDate: new Date(request.original_date).toLocaleDateString(),
+                  newDate: request.proposed_date ? new Date(request.proposed_date).toLocaleDateString() : '',
+                  reason: responseNotes || 'No reason provided',
+                  dashboardUrl: `${window.location.origin}/dashboard`
+                },
+                priority: 'HIGH' as any
+              });
+            }
+          } catch (emailError) {
+            handleError(emailError, {
+              operation: 'sendRescheduleResponseEmail',
+              requestId
+            });
+          }
 
           console.log('📧 Response notification sent successfully');
         }
