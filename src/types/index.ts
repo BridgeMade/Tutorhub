@@ -3,7 +3,7 @@ export interface User {
   email: string;
   firstName: string;
   lastName: string;
-  role: 'student' | 'tutor' | 'admin';
+  role: 'student' | 'tutor' | 'admin' | 'parent';
   avatar?: string;
   createdAt: Date;
   updatedAt: Date;
@@ -33,6 +33,11 @@ export interface Tutor extends User {
 export interface Admin extends User {
   role: 'admin';
   permissions?: string[];
+}
+
+export interface Parent extends User {
+  role: 'parent';
+  children?: string[]; // Array of student IDs
 }
 
 export interface TimeSlot {

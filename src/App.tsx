@@ -5,6 +5,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
 import AuthPage from './pages/AuthPage';
 import Dashboard from './pages/Dashboard';
+import DashboardDemo from './pages/DashboardDemo';
 import { Toaster } from 'react-hot-toast';
 import { appInitService } from './services/appInitService';
 import './utils/testSupabase'; // Test Supabase connection on app start
@@ -27,6 +28,7 @@ function App() {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/demo" element={<DashboardDemo />} />
           
           {/* Protected Routes */}
           <Route

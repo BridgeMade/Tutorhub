@@ -1,0 +1,490 @@
+/* TutorKai Design System */
+
+/* ==============================
+   COLOR PALETTE
+   ============================== */
+
+:root {
+  /* Primary Brand Colors */
+  --tutorkai-primary-50: #eff6ff;
+  --tutorkai-primary-100: #dbeafe;
+  --tutorkai-primary-200: #bfdbfe;
+  --tutorkai-primary-300: #93c5fd;
+  --tutorkai-primary-400: #60a5fa;
+  --tutorkai-primary-500: #3b82f6; /* Main brand blue */
+  --tutorkai-primary-600: #2563eb; /* Accent blue */
+  --tutorkai-primary-700: #1d4ed8;
+  --tutorkai-primary-800: #1e40af;
+  --tutorkai-primary-900: #1e3a8a;
+
+  /* Secondary Colors */
+  --tutorkai-secondary-50: #f8fafc;
+  --tutorkai-secondary-100: #f1f5f9;
+  --tutorkai-secondary-200: #e2e8f0;
+  --tutorkai-secondary-300: #cbd5e1;
+  --tutorkai-secondary-400: #94a3b8;
+  --tutorkai-secondary-500: #64748b;
+  --tutorkai-secondary-600: #475569;
+  --tutorkai-secondary-700: #334155;
+  --tutorkai-secondary-800: #1e293b;
+  --tutorkai-secondary-900: #0f172a;
+
+  /* Success Colors */
+  --tutorkai-success-50: #f0fdf4;
+  --tutorkai-success-100: #dcfce7;
+  --tutorkai-success-200: #bbf7d0;
+  --tutorkai-success-300: #86efac;
+  --tutorkai-success-400: #4ade80;
+  --tutorkai-success-500: #22c55e;
+  --tutorkai-success-600: #16a34a;
+  --tutorkai-success-700: #15803d;
+
+  /* Warning Colors */
+  --tutorkai-warning-50: #fffbeb;
+  --tutorkai-warning-100: #fef3c7;
+  --tutorkai-warning-200: #fde68a;
+  --tutorkai-warning-300: #fcd34d;
+  --tutorkai-warning-400: #fbbf24;
+  --tutorkai-warning-500: #f59e0b;
+  --tutorkai-warning-600: #d97706;
+  --tutorkai-warning-700: #b45309;
+
+  /* Error Colors */
+  --tutorkai-error-50: #fef2f2;
+  --tutorkai-error-100: #fee2e2;
+  --tutorkai-error-200: #fecaca;
+  --tutorkai-error-300: #fca5a5;
+  --tutorkai-error-400: #f87171;
+  --tutorkai-error-500: #ef4444;
+  --tutorkai-error-600: #dc2626;
+  --tutorkai-error-700: #b91c1c;
+
+  /* Neutral Colors */
+  --tutorkai-neutral-white: #ffffff;
+  --tutorkai-neutral-50: #fafafa;
+  --tutorkai-neutral-100: #f5f5f5;
+  --tutorkai-neutral-200: #e5e5e5;
+  --tutorkai-neutral-300: #d4d4d4;
+  --tutorkai-neutral-400: #a3a3a3;
+  --tutorkai-neutral-500: #737373;
+  --tutorkai-neutral-600: #525252;
+  --tutorkai-neutral-700: #404040;
+  --tutorkai-neutral-800: #262626;
+  --tutorkai-neutral-900: #171717;
+  --tutorkai-neutral-black: #000000;
+
+  /* Age-Specific Colors */
+  --tutorkai-kids-primary: #60a5fa; /* Bright blue */
+  --tutorkai-kids-secondary: #a78bfa; /* Purple */
+  --tutorkai-kids-accent: #34d399; /* Green */
+  --tutorkai-kids-bg: #f0f9ff; /* Light blue background */
+
+  --tutorkai-teen-primary: #2563eb; /* Darker blue */
+  --tutorkai-teen-secondary: #7c3aed; /* Deep purple */
+  --tutorkai-teen-accent: #059669; /* Forest green */
+  --tutorkai-teen-bg: #f8fafc; /* Clean gray background */
+
+  /* ==============================
+     TYPOGRAPHY
+     ============================== */
+
+  /* Font Families */
+  --tutorkai-font-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --tutorkai-font-mono: 'JetBrains Mono', 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', 'Droid Sans Mono', 'Courier New', monospace;
+
+  /* Font Sizes */
+  --tutorkai-text-xs: 0.75rem;    /* 12px */
+  --tutorkai-text-sm: 0.875rem;   /* 14px */
+  --tutorkai-text-base: 1rem;     /* 16px */
+  --tutorkai-text-lg: 1.125rem;   /* 18px */
+  --tutorkai-text-xl: 1.25rem;    /* 20px */
+  --tutorkai-text-2xl: 1.5rem;    /* 24px */
+  --tutorkai-text-3xl: 1.875rem;  /* 30px */
+  --tutorkai-text-4xl: 2.25rem;   /* 36px */
+
+  /* Font Weights */
+  --tutorkai-font-light: 300;
+  --tutorkai-font-normal: 400;
+  --tutorkai-font-medium: 500;
+  --tutorkai-font-semibold: 600;
+  --tutorkai-font-bold: 700;
+  --tutorkai-font-extrabold: 800;
+
+  /* Line Heights */
+  --tutorkai-leading-tight: 1.25;
+  --tutorkai-leading-snug: 1.375;
+  --tutorkai-leading-normal: 1.5;
+  --tutorkai-leading-relaxed: 1.625;
+  --tutorkai-leading-loose: 2;
+
+  /* ==============================
+     SPACING & LAYOUT
+     ============================== */
+
+  /* Spacing Scale */
+  --tutorkai-space-0: 0;
+  --tutorkai-space-1: 0.25rem;    /* 4px */
+  --tutorkai-space-2: 0.5rem;     /* 8px */
+  --tutorkai-space-3: 0.75rem;    /* 12px */
+  --tutorkai-space-4: 1rem;       /* 16px */
+  --tutorkai-space-5: 1.25rem;    /* 20px */
+  --tutorkai-space-6: 1.5rem;     /* 24px */
+  --tutorkai-space-8: 2rem;       /* 32px */
+  --tutorkai-space-10: 2.5rem;    /* 40px */
+  --tutorkai-space-12: 3rem;      /* 48px */
+  --tutorkai-space-16: 4rem;      /* 64px */
+  --tutorkai-space-20: 5rem;      /* 80px */
+  --tutorkai-space-24: 6rem;      /* 96px */
+
+  /* Border Radius */
+  --tutorkai-radius-none: 0;
+  --tutorkai-radius-sm: 0.125rem;   /* 2px */
+  --tutorkai-radius-base: 0.25rem;  /* 4px */
+  --tutorkai-radius-md: 0.375rem;   /* 6px */
+  --tutorkai-radius-lg: 0.5rem;     /* 8px */
+  --tutorkai-radius-xl: 0.75rem;    /* 12px */
+  --tutorkai-radius-2xl: 1rem;      /* 16px */
+  --tutorkai-radius-3xl: 1.5rem;    /* 24px */
+  --tutorkai-radius-full: 9999px;
+
+  /* Shadows */
+  --tutorkai-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --tutorkai-shadow-base: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --tutorkai-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --tutorkai-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  --tutorkai-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+  /* Z-Index Scale */
+  --tutorkai-z-dropdown: 1000;
+  --tutorkai-z-sticky: 1020;
+  --tutorkai-z-fixed: 1030;
+  --tutorkai-z-modal-backdrop: 1040;
+  --tutorkai-z-modal: 1050;
+  --tutorkai-z-popover: 1060;
+  --tutorkai-z-tooltip: 1070;
+  --tutorkai-z-toast: 1080;
+
+  /* ==============================
+     ANIMATION & TRANSITIONS
+     ============================== */
+
+  /* Transition Duration */
+  --tutorkai-duration-fast: 150ms;
+  --tutorkai-duration-normal: 300ms;
+  --tutorkai-duration-slow: 500ms;
+
+  /* Easing Functions */
+  --tutorkai-ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --tutorkai-ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --tutorkai-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ==============================
+   COMPONENT CLASSES
+   ============================== */
+
+/* Buttons */
+.tutorkai-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--tutorkai-font-primary);
+  font-weight: var(--tutorkai-font-medium);
+  line-height: var(--tutorkai-leading-tight);
+  border-radius: var(--tutorkai-radius-lg);
+  transition: all var(--tutorkai-duration-fast) var(--tutorkai-ease-in-out);
+  cursor: pointer;
+  border: none;
+  min-height: 44px; /* Accessibility: minimum touch target */
+  padding: var(--tutorkai-space-2) var(--tutorkai-space-4);
+  font-size: var(--tutorkai-text-sm);
+}
+
+.tutorkai-btn-primary {
+  background-color: var(--tutorkai-primary-600);
+  color: var(--tutorkai-neutral-white);
+  box-shadow: var(--tutorkai-shadow-sm);
+}
+
+.tutorkai-btn-primary:hover {
+  background-color: var(--tutorkai-primary-700);
+  box-shadow: var(--tutorkai-shadow-md);
+  transform: translateY(-1px);
+}
+
+.tutorkai-btn-secondary {
+  background-color: var(--tutorkai-neutral-white);
+  color: var(--tutorkai-secondary-700);
+  border: 1px solid var(--tutorkai-secondary-300);
+  box-shadow: var(--tutorkai-shadow-sm);
+}
+
+.tutorkai-btn-secondary:hover {
+  background-color: var(--tutorkai-secondary-50);
+  border-color: var(--tutorkai-secondary-400);
+  box-shadow: var(--tutorkai-shadow-md);
+}
+
+.tutorkai-btn-success {
+  background-color: var(--tutorkai-success-600);
+  color: var(--tutorkai-neutral-white);
+}
+
+.tutorkai-btn-success:hover {
+  background-color: var(--tutorkai-success-700);
+}
+
+.tutorkai-btn-warning {
+  background-color: var(--tutorkai-warning-500);
+  color: var(--tutorkai-neutral-white);
+}
+
+.tutorkai-btn-warning:hover {
+  background-color: var(--tutorkai-warning-600);
+}
+
+.tutorkai-btn-error {
+  background-color: var(--tutorkai-error-600);
+  color: var(--tutorkai-neutral-white);
+}
+
+.tutorkai-btn-error:hover {
+  background-color: var(--tutorkai-error-700);
+}
+
+/* Cards */
+.tutorkai-card {
+  background-color: var(--tutorkai-neutral-white);
+  border-radius: var(--tutorkai-radius-xl);
+  box-shadow: var(--tutorkai-shadow-base);
+  border: 1px solid var(--tutorkai-secondary-200);
+  padding: var(--tutorkai-space-6);
+  transition: all var(--tutorkai-duration-normal) var(--tutorkai-ease-out);
+}
+
+.tutorkai-card:hover {
+  box-shadow: var(--tutorkai-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.tutorkai-card-kids {
+  background: linear-gradient(135deg, var(--tutorkai-kids-bg) 0%, #fef7ff 100%);
+  border: 1px solid var(--tutorkai-kids-primary);
+}
+
+.tutorkai-card-teen {
+  background: linear-gradient(135deg, var(--tutorkai-teen-bg) 0%, #f8fafc 100%);
+  border: 1px solid var(--tutorkai-teen-primary);
+}
+
+/* Typography */
+.tutorkai-heading-1 {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-4xl);
+  font-weight: var(--tutorkai-font-bold);
+  line-height: var(--tutorkai-leading-tight);
+  color: var(--tutorkai-secondary-900);
+}
+
+.tutorkai-heading-2 {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-3xl);
+  font-weight: var(--tutorkai-font-bold);
+  line-height: var(--tutorkai-leading-tight);
+  color: var(--tutorkai-secondary-900);
+}
+
+.tutorkai-heading-3 {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-2xl);
+  font-weight: var(--tutorkai-font-semibold);
+  line-height: var(--tutorkai-leading-snug);
+  color: var(--tutorkai-secondary-900);
+}
+
+.tutorkai-heading-4 {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-xl);
+  font-weight: var(--tutorkai-font-semibold);
+  line-height: var(--tutorkai-leading-snug);
+  color: var(--tutorkai-secondary-900);
+}
+
+.tutorkai-body {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-base);
+  font-weight: var(--tutorkai-font-normal);
+  line-height: var(--tutorkai-leading-normal);
+  color: var(--tutorkai-secondary-700);
+}
+
+.tutorkai-body-sm {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-sm);
+  font-weight: var(--tutorkai-font-normal);
+  line-height: var(--tutorkai-leading-normal);
+  color: var(--tutorkai-secondary-600);
+}
+
+.tutorkai-caption {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-xs);
+  font-weight: var(--tutorkai-font-medium);
+  line-height: var(--tutorkai-leading-normal);
+  color: var(--tutorkai-secondary-500);
+}
+
+/* Forms */
+.tutorkai-input {
+  font-family: var(--tutorkai-font-primary);
+  font-size: var(--tutorkai-text-base);
+  border: 1px solid var(--tutorkai-secondary-300);
+  border-radius: var(--tutorkai-radius-lg);
+  padding: var(--tutorkai-space-3) var(--tutorkai-space-4);
+  background-color: var(--tutorkai-neutral-white);
+  color: var(--tutorkai-secondary-900);
+  transition: all var(--tutorkai-duration-fast) var(--tutorkai-ease-in-out);
+  min-height: 44px; /* Accessibility: minimum touch target */
+}
+
+.tutorkai-input:focus {
+  outline: none;
+  border-color: var(--tutorkai-primary-500);
+  box-shadow: 0 0 0 3px var(--tutorkai-primary-100);
+}
+
+.tutorkai-input::placeholder {
+  color: var(--tutorkai-secondary-400);
+}
+
+/* Status Indicators */
+.tutorkai-status-pending {
+  background-color: var(--tutorkai-warning-100);
+  color: var(--tutorkai-warning-800);
+  border: 1px solid var(--tutorkai-warning-300);
+}
+
+.tutorkai-status-active {
+  background-color: var(--tutorkai-success-100);
+  color: var(--tutorkai-success-800);
+  border: 1px solid var(--tutorkai-success-300);
+}
+
+.tutorkai-status-urgent {
+  background-color: var(--tutorkai-error-100);
+  color: var(--tutorkai-error-800);
+  border: 1px solid var(--tutorkai-error-300);
+}
+
+/* Progress Indicators */
+.tutorkai-progress-bar {
+  width: 100%;
+  height: var(--tutorkai-space-3);
+  background-color: var(--tutorkai-secondary-200);
+  border-radius: var(--tutorkai-radius-full);
+  overflow: hidden;
+}
+
+.tutorkai-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--tutorkai-primary-500), var(--tutorkai-success-500));
+  border-radius: var(--tutorkai-radius-full);
+  transition: width var(--tutorkai-duration-normal) var(--tutorkai-ease-out);
+}
+
+/* Navigation */
+.tutorkai-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  padding: var(--tutorkai-space-2);
+  border-radius: var(--tutorkai-radius-lg);
+  transition: all var(--tutorkai-duration-fast) var(--tutorkai-ease-in-out);
+  color: var(--tutorkai-secondary-400);
+  min-height: 44px; /* Accessibility: minimum touch target */
+  min-width: 44px;
+}
+
+.tutorkai-nav-item.active {
+  color: var(--tutorkai-primary-600);
+  background-color: var(--tutorkai-primary-50);
+}
+
+.tutorkai-nav-item:hover:not(.active) {
+  color: var(--tutorkai-secondary-600);
+  background-color: var(--tutorkai-secondary-50);
+}
+
+/* ==============================
+   RESPONSIVE UTILITIES
+   ============================== */
+
+/* Mobile-first breakpoints */
+@media (min-width: 640px) {
+  .tutorkai-sm-hidden { display: none; }
+}
+
+@media (min-width: 768px) {
+  .tutorkai-md-hidden { display: none; }
+  .tutorkai-mobile-only { display: none; }
+}
+
+@media (min-width: 1024px) {
+  .tutorkai-lg-hidden { display: none; }
+}
+
+@media (max-width: 767px) {
+  .tutorkai-desktop-only { display: none; }
+}
+
+/* ==============================
+   ACCESSIBILITY UTILITIES
+   ============================== */
+
+.tutorkai-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tutorkai-focus-visible:focus {
+  outline: 2px solid var(--tutorkai-primary-500);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .tutorkai-card {
+    border: 2px solid var(--tutorkai-secondary-400);
+  }
+  
+  .tutorkai-btn {
+    border: 2px solid currentColor;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .tutorkai-card,
+  .tutorkai-btn,
+  .tutorkai-input,
+  .tutorkai-nav-item,
+  .tutorkai-progress-fill {
+    transition: none;
+  }
+  
+  .tutorkai-card:hover {
+    transform: none;
+  }
+  
+  .tutorkai-btn-primary:hover {
+    transform: none;
+  }
+}

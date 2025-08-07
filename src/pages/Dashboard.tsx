@@ -4,10 +4,14 @@ import { StudentDashboard } from '../components/student/StudentDashboard';
 import { StudentDashboardContent } from '../components/student/StudentDashboardContent';
 import { StudentSessions } from '../components/student/StudentSessions';
 import { MobileStudentDashboard } from '../components/student/MobileStudentDashboard';
+import StudentDashboardK7 from '../components/student/StudentDashboardK7';
+import StudentDashboard812 from '../components/student/StudentDashboard812';
 import { TutorDashboard } from '../components/tutor/TutorDashboard';
 import { TutorDashboardContent } from '../components/tutor/TutorDashboardContent';
 import { TutorSessions } from '../components/tutor/TutorSessions';
 import { MobileTutorDashboard } from '../components/tutor/MobileTutorDashboard';
+import TutorMobileDashboard from '../components/tutor/TutorMobileDashboard';
+import ParentDashboard from '../components/parent/ParentDashboard';
 import { StudentManagement } from '../components/tutor/StudentManagement';
 import { EarningsAnalytics } from '../components/tutor/comprehensive/EarningsAnalytics';
 import { StudyPlanner } from '../components/student/StudyPlanner';
@@ -22,7 +26,7 @@ import { SessionCalendar } from '../components/calendar/SessionCalendar';
 import { ScheduleManagement } from '../components/tutor/comprehensive/ScheduleManagement';
 import { Navbar } from '../components/layout/Navbar';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
-import { Student, Tutor, Admin, TutoringSession, DashboardStats } from '../types';
+import { Student, Tutor, Admin, Parent, TutoringSession, DashboardStats } from '../types';
 import { userService } from '../services/userService';
 import { lessonService } from '../services/lessonService';
 import { paymentService } from '../services/paymentService';
@@ -30,7 +34,7 @@ import { paymentService } from '../services/paymentService';
 
 const Dashboard: React.FC = () => {
   const { user, loading, signOut } = useAuthContext();
-  const [userData, setUserData] = useState<Student | Tutor | Admin | null>(null);
+  const [userData, setUserData] = useState<Student | Tutor | Admin | Parent | null>(null);
   const [sessions, setSessions] = useState<TutoringSession[]>([]);
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [realAdminStats, setRealAdminStats] = useState<any>(null);
@@ -102,8 +106,8 @@ const Dashboard: React.FC = () => {
         console.log('Debug - Converted user:', convertedUser);
         console.log('Debug - Converted user ID:', convertedUser?.id);
         
-        if (convertedUser.role === 'student' || convertedUser.role === 'tutor' || convertedUser.role === 'admin') {
-          setUserData(convertedUser as Student | Tutor | Admin);
+        if (convertedUser.role === 'student' || convertedUser.role === 'tutor' || convertedUser.role === 'admin' || convertedUser.role === 'parent') {
+          setUserData(convertedUser as Student | Tutor | Admin | Parent);
         }
         
         // Initialize profile data for editing
@@ -196,19 +200,49 @@ const Dashboard: React.FC = () => {
     switch (currentView) {
       case 'dashboard':
         if (userData.role === 'student') {
-          return (
-            <StudentDashboard 
-              student={userData as Student}
-              upcomingSessions={sessions}
-              stats={stats || defaultStats}
-            />
-          );
+          // Determine grade level for appropriate dashboard
+          const student = userData as Student;
+          const gradeLevel = student.grade || 'K';
+          
+          // Extract numeric grade or handle special cases
+          let numericGrade = 0;
+          if (gradeLevel === 'K') {
+            numericGrade = 0;
+          } else {
+            const parsed = parseInt(gradeLevel.toString());
+            numericGrade = isNaN(parsed) ? 0 : parsed;
+          }
+          
+          // Show age-appropriate dashboard
+          if (numericGrade <= 7) {
+            return (
+              <StudentDashboardK7 
+                studentName={student.firstName || 'Student'}
+                grade={gradeLevel.toString()}
+                streak={3}
+                trophyCount={5}
+              />
+            );
+          } else {
+            return (
+              <StudentDashboard812 
+                studentName={student.firstName || 'Student'}
+                grade={gradeLevel.toString()}
+              />
+            );
+          }
         } else if (userData.role === 'tutor') {
           return (
-            <TutorDashboard 
-              tutor={userData as Tutor}
-              upcomingSessions={sessions}
-              stats={stats || defaultStats}
+            <TutorMobileDashboard 
+              tutorName={userData.firstName + ' ' + userData.lastName}
+              todayEarnings={420}
+              weeklyEarnings={420}
+            />
+          );
+        } else if (userData.role === 'parent') {
+          return (
+            <ParentDashboard 
+              parentId={userData.id}
             />
           );
         } else if (userData.role === 'admin') {
@@ -494,49 +528,57 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // For students, show mobile dashboard on mobile devices
+  // For students, show age-appropriate dashboards (always use new components)
   if (userData.role === 'student') {
-    if (isMobile) {
+    const student = userData as Student;
+    const gradeLevel = student.grade || 'K';
+    
+    // Extract numeric grade
+    let numericGrade = 0;
+    if (gradeLevel === 'K') {
+      numericGrade = 0;
+    } else {
+      const parsed = parseInt(gradeLevel.toString());
+      numericGrade = isNaN(parsed) ? 0 : parsed;
+    }
+    
+    // Show age-appropriate dashboard
+    if (numericGrade <= 7) {
       return (
-        <MobileStudentDashboard 
-          student={userData as Student}
-          upcomingSessions={sessions}
-          stats={stats || defaultStats}
+        <StudentDashboardK7 
+          studentName={student.firstName || 'Student'}
+          grade={gradeLevel.toString()}
+          streak={3}
+          trophyCount={5}
+        />
+      );
+    } else {
+      return (
+        <StudentDashboard812 
+          studentName={student.firstName || 'Student'}
+          grade={gradeLevel.toString()}
         />
       );
     }
+  }
 
+  // For tutors, always show new mobile dashboard
+  if (userData.role === 'tutor') {
     return (
-      <DashboardLayout 
-        userRole={userData.role} 
-        defaultActiveTab={currentView}
-        onTabChange={setCurrentView}
-      >
-        {renderCurrentView()}
-      </DashboardLayout>
+      <TutorMobileDashboard 
+        tutorName={userData.firstName + ' ' + userData.lastName}
+        todayEarnings={420}
+        weeklyEarnings={420}
+      />
     );
   }
 
-  // For tutors, show mobile dashboard on mobile devices
-  if (userData.role === 'tutor') {
-    if (isMobile) {
-      return (
-        <MobileTutorDashboard 
-          tutor={userData as Tutor}
-          upcomingSessions={sessions}
-          stats={stats || defaultStats}
-        />
-      );
-    }
-
+  // For parents, show parent dashboard
+  if (userData.role === 'parent') {
     return (
-      <DashboardLayout 
-        userRole={userData.role} 
-        defaultActiveTab={currentView}
-        onTabChange={setCurrentView}
-      >
-        {renderCurrentView()}
-      </DashboardLayout>
+      <ParentDashboard 
+        parentId={userData.id}
+      />
     );
   }
 
