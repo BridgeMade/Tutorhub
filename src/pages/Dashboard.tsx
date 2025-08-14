@@ -11,6 +11,7 @@ import { TutorDashboardContent } from '../components/tutor/TutorDashboardContent
 import { TutorSessions } from '../components/tutor/TutorSessions';
 import { MobileTutorDashboard } from '../components/tutor/MobileTutorDashboard';
 import TutorMobileDashboard from '../components/tutor/TutorMobileDashboard';
+import { ComprehensiveTutorDashboard } from '../components/tutor/comprehensive/ComprehensiveTutorDashboard';
 import ParentDashboard from '../components/parent/ParentDashboard';
 import { StudentManagement } from '../components/tutor/StudentManagement';
 import { EarningsAnalytics } from '../components/tutor/comprehensive/EarningsAnalytics';
@@ -213,7 +214,12 @@ const Dashboard: React.FC = () => {
             numericGrade = isNaN(parsed) ? 0 : parsed;
           }
           
-          // Show age-appropriate dashboard
+          // Debug logging for grade detection
+          console.log('🔍 Dashboard Debug - Student grade:', gradeLevel);
+          console.log('🔍 Dashboard Debug - Numeric grade:', numericGrade);
+          console.log('🔍 Dashboard Debug - Will show:', numericGrade <= 7 ? 'K-7 Dashboard' : 'Grade 8-12 Dashboard');
+          
+          // Show age-appropriate dashboard  
           if (numericGrade <= 7) {
             return (
               <StudentDashboardK7 
@@ -227,16 +233,16 @@ const Dashboard: React.FC = () => {
             return (
               <StudentDashboard812 
                 studentName={student.firstName || 'Student'}
-                grade={gradeLevel.toString()}
+                grade={numericGrade >= 8 ? gradeLevel.toString() : '10'}
               />
             );
           }
         } else if (userData.role === 'tutor') {
           return (
-            <TutorMobileDashboard 
-              tutorName={userData.firstName + ' ' + userData.lastName}
-              todayEarnings={420}
-              weeklyEarnings={420}
+            <ComprehensiveTutorDashboard 
+              tutor={userData as Tutor}
+              upcomingSessions={sessions}
+              stats={stats || defaultStats}
             />
           );
         } else if (userData.role === 'parent') {
@@ -562,13 +568,13 @@ const Dashboard: React.FC = () => {
     }
   }
 
-  // For tutors, always show new mobile dashboard
+  // For tutors, always show comprehensive dashboard
   if (userData.role === 'tutor') {
     return (
-      <TutorMobileDashboard 
-        tutorName={userData.firstName + ' ' + userData.lastName}
-        todayEarnings={420}
-        weeklyEarnings={420}
+      <ComprehensiveTutorDashboard 
+        tutor={userData as Tutor}
+        upcomingSessions={sessions}
+        stats={stats || defaultStats}
       />
     );
   }

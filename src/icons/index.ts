@@ -1,0 +1,17 @@
+export { HomeIcon } from './HomeIcon';
+export { LessonsIcon } from './LessonsIcon';
+export { ProgressIcon } from './ProgressIcon';
+export { MessagesIcon } from './MessagesIcon';
+export { ProfileIcon } from './ProfileIcon';
+export { MathsIcon } from './MathsIcon';
+export { ScienceIcon } from './ScienceIcon';
+export { AccountingIcon } from './AccountingIcon';
+export { CATIcon } from './CATIcon';
+export { BusinessStudiesIcon } from './BusinessStudiesIcon';
+export { LanguagesIcon } from './LanguagesIcon';
+export { UploadIcon } from './UploadIcon';
+export { DownloadIcon } from './DownloadIcon';
+export { IconTrophy } from './IconTrophy';
+export { IconFlame } from './IconFlame';
+export { IconMore } from './IconMore';
+export type { IconProps } from './IconProps';

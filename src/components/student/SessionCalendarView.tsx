@@ -16,6 +16,8 @@ export const SessionCalendarView: React.FC<SessionCalendarViewProps> = ({
   onSessionClick
 }) => {
   const [currentDate] = useState(new Date());
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [showDayPopup, setShowDayPopup] = useState(false);
 
   const getSessionColor = (subject: string, status: string) => {
     const baseColors = {
@@ -32,6 +34,31 @@ export const SessionCalendarView: React.FC<SessionCalendarViewProps> = ({
     }
     
     return baseColors[subject as keyof typeof baseColors] || 'bg-gray-100 border-gray-300 text-gray-800';
+  };
+
+  const getDotColor = (subject: string, status: string) => {
+    const dotColors = {
+      'Mathematics': status === 'completed' ? 'bg-blue-300' : 'bg-blue-500',
+      'Physics': status === 'completed' ? 'bg-green-300' : 'bg-green-500',
+      'Chemistry': status === 'completed' ? 'bg-purple-300' : 'bg-purple-500',
+      'Biology': status === 'completed' ? 'bg-orange-300' : 'bg-orange-500',
+      'English': status === 'completed' ? 'bg-pink-300' : 'bg-pink-500',
+    };
+    
+    return dotColors[subject as keyof typeof dotColors] || (status === 'completed' ? 'bg-gray-300' : 'bg-gray-500');
+  };
+
+  const handleDayClick = (day: number) => {
+    const daySessions = getSessionsForDay(day);
+    if (daySessions.length > 0) {
+      setSelectedDay(day);
+      setShowDayPopup(true);
+    }
+  };
+
+  const closeDayPopup = () => {
+    setShowDayPopup(false);
+    setSelectedDay(null);
   };
 
   const getDaysInMonth = (date: Date) => {
@@ -160,46 +187,39 @@ export const SessionCalendarView: React.FC<SessionCalendarViewProps> = ({
             return (
               <div
                 key={day}
-                className={`h-24 border border-gray-100 rounded-lg p-2 transition-colors hover:bg-gray-50 ${
-                  isCurrentDay ? 'bg-orange-50 border-orange-200' : ''
-                } ${isPast ? 'bg-gray-50' : ''}`}
+                onClick={() => handleDayClick(day)}
+                className={`h-24 border border-gray-100 rounded-lg p-2 transition-colors hover:bg-gray-50 cursor-pointer ${
+                  isCurrentDay ? 'bg-blue-50 border-blue-200' : ''
+                } ${isPast ? 'bg-gray-50' : ''} ${daySessions.length > 0 ? 'hover:shadow-md' : ''}`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className={`text-sm font-medium ${
-                    isCurrentDay ? 'text-orange-600' : isPast ? 'text-gray-400' : 'text-gray-900'
+                    isCurrentDay ? 'text-blue-600' : isPast ? 'text-gray-400' : 'text-gray-900'
                   }`}>
                     {day}
                   </span>
                   {isCurrentDay && (
-                    <div className="w-2 h-2 bg-orange-400 rounded-full"></div>
+                    <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                   )}
                 </div>
                 
-                {/* Sessions for this day */}
-                <div className="space-y-1">
-                  {daySessions.slice(0, 2).map((session, index) => (
-                    <button
-                      key={session.id}
-                      onClick={() => onSessionClick?.(session)}
-                      className={`w-full text-left p-1 rounded text-xs font-medium transition-all hover:shadow-sm ${getSessionColor(session.subject, session.status)}`}
-                      title={`${session.subject} at ${formatSATime(session.scheduledAt)}`}
-                    >
-                      <div className="truncate">
-                        {formatSATime(session.scheduledAt)}
+                {/* Session dots */}
+                {daySessions.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {daySessions.slice(0, 6).map((session, index) => (
+                      <div
+                        key={session.id}
+                        className={`w-2 h-2 rounded-full ${getDotColor(session.subject, session.status)}`}
+                        title={`${session.subject} at ${formatSATime(session.scheduledAt)}`}
+                      />
+                    ))}
+                    {daySessions.length > 6 && (
+                      <div className="text-xs text-gray-500 font-medium ml-1">
+                        +{daySessions.length - 6}
                       </div>
-                      <div className="truncate font-semibold">
-                        {session.subject}
-                      </div>
-                    </button>
-                  ))}
-                  
-                  {/* Show "+X more" if there are more than 2 sessions */}
-                  {daySessions.length > 2 && (
-                    <div className="text-xs text-gray-500 font-medium px-1">
-                      +{daySessions.length - 2} more
-                    </div>
-                  )}
-                </div>
+                    )}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -212,28 +232,113 @@ export const SessionCalendarView: React.FC<SessionCalendarViewProps> = ({
           <h4 className="text-sm font-medium text-gray-900 mb-3">Legend</h4>
           <div className="flex flex-wrap gap-4 text-xs">
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-blue-100 border border-blue-300 rounded"></div>
+              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
               <span className="text-gray-600">Mathematics</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-green-100 border border-green-300 rounded"></div>
+              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
               <span className="text-gray-600">Physics</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-purple-100 border border-purple-300 rounded"></div>
+              <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
               <span className="text-gray-600">Chemistry</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-orange-100 border border-orange-300 rounded"></div>
+              <div className="w-3 h-3 bg-orange-500 rounded-full"></div>
               <span className="text-gray-600">Biology</span>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-3 h-3 bg-gray-50 border border-gray-200 rounded"></div>
+              <div className="w-3 h-3 bg-gray-300 rounded-full"></div>
               <span className="text-gray-600">Completed</span>
             </div>
           </div>
+          <p className="text-xs text-gray-500 mt-2">Click on any day with dots to see session details</p>
         </div>
       </div>
+
+      {/* Day Details Popup */}
+      {showDayPopup && selectedDay && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-xl max-w-md w-full max-h-[80vh] overflow-hidden shadow-2xl">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {monthNames[selectedMonth.getMonth()]} {selectedDay}, {selectedMonth.getFullYear()}
+                  </h3>
+                  <p className="text-sm text-gray-600">
+                    {getSessionsForDay(selectedDay).length} session{getSessionsForDay(selectedDay).length !== 1 ? 's' : ''}
+                  </p>
+                </div>
+                <button
+                  onClick={closeDayPopup}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <div className="space-y-3">
+                {getSessionsForDay(selectedDay).map((session) => (
+                  <div
+                    key={session.id}
+                    className={`p-4 rounded-lg border-l-4 ${
+                      session.subject === 'Mathematics' ? 'border-l-blue-500 bg-blue-50' :
+                      session.subject === 'Physics' ? 'border-l-green-500 bg-green-50' :
+                      session.subject === 'Chemistry' ? 'border-l-purple-500 bg-purple-50' :
+                      session.subject === 'Biology' ? 'border-l-orange-500 bg-orange-50' :
+                      session.subject === 'English' ? 'border-l-pink-500 bg-pink-50' :
+                      'border-l-gray-500 bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-gray-900">{session.subject}</h4>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {formatSATime(session.scheduledAt)} • {session.duration} minutes
+                        </p>
+                      </div>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        session.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        session.status === 'scheduled' ? 'bg-blue-100 text-blue-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {session.status}
+                      </span>
+                    </div>
+                    
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => {
+                          onSessionClick?.(session);
+                          closeDayPopup();
+                        }}
+                        className="bg-blue-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+                      >
+                        View Details
+                      </button>
+                      {session.status === 'scheduled' && (
+                        <>
+                          <button className="bg-green-600 text-white px-3 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition-colors">
+                            Join
+                          </button>
+                          <button className="text-gray-700 px-3 py-2 rounded-lg text-sm font-medium hover:bg-gray-100 transition-colors border border-gray-200">
+                            Reschedule
+                          </button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

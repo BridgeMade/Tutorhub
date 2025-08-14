@@ -8,6 +8,7 @@ export interface Profile {
   avatar_url?: string;
   role: 'student' | 'tutor' | 'admin';
   phone?: string;
+  grade_level?: string;
   created_at: string;
   updated_at: string;
 }
@@ -191,7 +192,7 @@ export const userService = {
       return {
         ...baseUser,
         role: 'student',
-        grade: studentData?.grade_level,
+        grade: profile.grade_level || studentData?.grade_level || 'K',
         subjects: [], // TODO: Get from lessons/subjects
         parentContact: studentData?.parent_name ? {
           name: studentData.parent_name,

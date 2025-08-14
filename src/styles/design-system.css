@@ -49,6 +49,16 @@
   --tutorkai-warning-600: #d97706;
   --tutorkai-warning-700: #b45309;
 
+  /* Orange Colors (for Math subject) */
+  --tutorkai-orange-50: #fff7ed;
+  --tutorkai-orange-100: #ffedd5;
+  --tutorkai-orange-200: #fed7aa;
+  --tutorkai-orange-300: #fdba74;
+  --tutorkai-orange-400: #fb923c;
+  --tutorkai-orange-500: #f97316;
+  --tutorkai-orange-600: #ea580c;
+  --tutorkai-orange-700: #c2410c;
+
   /* Error Colors */
   --tutorkai-error-50: #fef2f2;
   --tutorkai-error-100: #fee2e2;

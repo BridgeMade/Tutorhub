@@ -1,672 +1,249 @@
-import React, { useState } from 'react';
-import { Star, Trophy, Clock, BookOpen, User, Calendar, TrendingUp, MessageCircle } from 'lucide-react';
-import { 
-  MdSchool, 
-  MdCalculate, 
-  MdPalette, 
-  MdLocalFireDepartment,
-  MdEmojiEvents,
-  MdAssignment,
-  MdMenuBook,
-  MdAccessTime,
-  MdGpsFixed,
-  MdRefresh,
-  MdMoreHoriz
-} from 'react-icons/md';
-
-interface Lesson {
-  id: string;
-  subject: string;
-  time: string;
-  tutor: string;
-  icon: string;
-}
-
-interface Assignment {
-  id: string;
-  title: string;
-  description: string;
-  due: string;
-  stars: number;
-  completed?: boolean;
-}
-
-interface Achievement {
-  id: string;
-  title: string;
-  description: string;
-  icon: string;
-}
-
-interface Activity {
-  id: string;
-  type: 'lesson' | 'assignment' | 'achievement';
-  title: string;
-  description: string;
-  time: string;
-  feedback?: string;
-}
+import { Bell, MoreHorizontal, BookOpen, Upload, Download, FileText, Calculator, Trophy, Star, Target, Calendar, TrendingUp, Award, CheckCircle, Grid3X3, Microscope } from "lucide-react";
+import IconButton from "../IconButton";
+import LessonCard from "../LessonCard";
+import QuickActionButton from "../QuickActionButton";
+import WorkCard from "../WorkCard";
 
 interface StudentDashboardK7Props {
-  studentName: string;
-  grade: string;
-  streak: number;
-  trophyCount: number;
+  studentName?: string;
+  grade?: string;
+  streak?: number;
+  trophyCount?: number;
 }
 
 const StudentDashboardK7: React.FC<StudentDashboardK7Props> = ({
-  studentName = 'Emma',
-  grade = '3',
-  streak = 3,
-  trophyCount = 5
+  studentName = 'Karabo',
 }) => {
-  const [todaysLessons] = useState<Lesson[]>([
-    {
-      id: '1',
-      subject: 'Reading',
-      time: '2:00 PM',
-      tutor: 'Ms. Smith',
-icon: 'school'
-    },
-    {
-      id: '2',
-      subject: 'Math',
-      time: '3:30 PM', 
-      tutor: 'Mr. Jones',
-icon: 'calculate'
-    },
-    {
-      id: '3',
-      subject: 'Art',
-      time: '4:00 PM',
-      tutor: 'Ms. Brown',
-icon: 'palette'
-    }
-  ]);
-
-  const [assignments] = useState<Assignment[]>([
-    {
-      id: '1',
-      title: 'Reading Worksheet',
-      description: 'Read 3 pages about animals',
-      due: 'Tomorrow',
-      stars: 3
-    },
-    {
-      id: '2',
-      title: 'Math Practice',
-      description: 'Practice addition with pictures',
-      due: 'Friday',
-      stars: 2
-    }
-  ]);
-
-  const [weeklyProgress] = useState(100);
-
-  const [achievements] = useState<Achievement[]>([
-    {
-      id: '1',
-      title: 'Reading Star',
-      description: 'finished 3 books this month',
-icon: 'school'
-    },
-    {
-      id: '2',
-      title: 'Math Wizard',
-      description: 'solved 20 problems in a row',
-icon: 'calculate'
-    },
-    {
-      id: '3',
-      title: 'Always on Time',
-      description: 'attended all lessons this week',
-icon: 'schedule'
-    }
-  ]);
-
-  const [recentActivities] = useState<Activity[]>([
-    {
-      id: '1',
-      type: 'lesson',
-      title: 'Math lesson with Mr. Jones',
-      description: 'Great job!',
-      time: 'Today',
-      feedback: 'Great job!'
-    },
-    {
-      id: '2',
-      type: 'assignment',
-      title: 'Finished reading worksheet',
-      description: 'A+ work!',
-      time: 'Today',
-      feedback: 'A+ work!'
-    },
-    {
-      id: '3',
-      type: 'lesson',
-      title: 'Art class with Ms. Brown',
-      description: 'Loved your drawing!',
-      time: 'Yesterday',
-      feedback: 'Loved your drawing!'
-    },
-    {
-      id: '4',
-      title: 'Read 5 pages of "The Magic Tree"',
-      description: '',
-      time: 'Yesterday',
-      type: 'assignment'
-    }
-  ]);
-
-  const renderStars = (count: number) => {
-    return (
-      <div className="flex space-x-1">
-        {[...Array(3)].map((_, i) => (
-          <Star
-            key={i}
-            className={`w-4 h-4 ${
-              i < count ? 'text-yellow-400 fill-current' : 'text-gray-300'
-            }`}
-          />
-        ))}
-      </div>
-    );
-  };
 
   return (
-    <div className="min-h-screen" style={{
-      background: 'linear-gradient(135deg, var(--tutorkai-primary-50), var(--tutorkai-secondary-50))'
-    }}>
+    <div className="px-6 py-6 space-y-6 bg-[--tk-surface] min-h-full">
       {/* Header */}
-      <div className="bg-white shadow-sm" style={{
-        borderRadius: '0 0 var(--tutorkai-radius-3xl) var(--tutorkai-radius-3xl)',
-        padding: 'var(--tutorkai-space-4)'
-      }}>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-3)' }}>
-            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{
-              background: 'linear-gradient(135deg, var(--tutorkai-primary-400), var(--tutorkai-secondary-400))'
-            }}>
-              <MdEmojiEvents size={20} color='white' />
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-[24px] leading-8 font-bold tracking-tight text-[--tk-text] mb-3">Hi {studentName}</h1>
+          
+          {/* Achievement badges */}
+          <div className="flex items-center gap-2">
+            {/* Trophy pill */}
+            <div className="w-10 h-10 rounded-xl bg-[--tk-yellow-400] flex items-center justify-center shadow-[0_4px_12px_rgba(23,42,92,0.12)]">
+              <Trophy size={20} className="text-orange-800" />
             </div>
-            <div>
-              <h1 className="tutorkai-heading-3" style={{ color: 'var(--tutorkai-secondary-900)' }}>
-                Hi {studentName}! (Grade {grade})
-              </h1>
-              <div className="flex items-center tutorkai-body-sm" style={{ gap: 'var(--tutorkai-space-4)' }}>
-                <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-                  <Trophy className="w-4 h-4" style={{ color: 'var(--tutorkai-warning-500)' }} />
-                  <span style={{ fontWeight: 'var(--tutorkai-font-medium)' }}>{trophyCount}</span>
-                </div>
-                <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-                  <div className="w-4 h-4 rounded-full flex items-center justify-center" style={{
-                    backgroundColor: 'var(--tutorkai-warning-500)'
-                  }}>
-                    <MdLocalFireDepartment size={12} color='white' />
-                  </div>
-                  <span style={{ fontWeight: 'var(--tutorkai-font-medium)' }}>{streak} days</span>
-                </div>
-              </div>
+            
+            {/* Streak pill */}
+            <div className="px-3 py-2 rounded-2xl bg-[--tk-blue-50] flex items-center gap-1 shadow-[0_4px_12px_rgba(23,42,92,0.12)]">
+              <Star size={16} className="text-[--tk-blue-600]" />
+              <span className="text-[14px] font-bold text-[--tk-blue-600] tracking-tight">3 days</span>
             </div>
           </div>
         </div>
         
-        <div className="rounded-xl" style={{
-          marginTop: 'var(--tutorkai-space-3)',
-          backgroundColor: 'var(--tutorkai-primary-100)',
-          borderRadius: 'var(--tutorkai-radius-xl)',
-          padding: 'var(--tutorkai-space-3)'
-        }}>
-          <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-2)' }}>
-            <Clock className="w-5 h-5" style={{ color: 'var(--tutorkai-primary-600)' }} />
-            <span className="tutorkai-body" style={{
-              color: 'var(--tutorkai-primary-800)',
-              fontWeight: 'var(--tutorkai-font-medium)'
-            }}>
-              Next: Math Fun Time in 2 hours
-            </span>
+        <div className="flex items-center gap-2">
+          {/* Icon badges - 36x36 with exact styling */}
+          <div className="w-9 h-9 rounded-xl bg-white border border-[--tk-border] shadow-sm flex items-center justify-center">
+            <Bell size={20} className="text-[--tk-muted]" />
+          </div>
+          <div className="w-9 h-9 rounded-xl bg-white border border-[--tk-border] shadow-sm flex items-center justify-center">
+            <MoreHorizontal size={20} className="text-[--tk-muted]" />
           </div>
         </div>
       </div>
 
-      <div style={{
-        padding: 'var(--tutorkai-space-4)',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 'var(--tutorkai-space-6)'
-      }}>
-        {/* Today's Lessons */}
-        <div className="tutorkai-card" style={{
-          borderRadius: 'var(--tutorkai-radius-2xl)',
-          padding: 'var(--tutorkai-space-4)'
-        }}>
-          <h2 className="tutorkai-heading-4" style={{
-            marginBottom: 'var(--tutorkai-space-4)',
-            color: 'var(--tutorkai-secondary-900)'
-          }}>
-            Today's Lessons
-          </h2>
-          
-          <div className="flex overflow-x-auto" style={{
-            gap: 'var(--tutorkai-space-4)',
-            paddingBottom: 'var(--tutorkai-space-2)'
-          }}>
-            {todaysLessons.map((lesson) => (
-              <div key={lesson.id} className="flex-shrink-0 rounded-xl text-center" style={{
-                background: 'linear-gradient(135deg, var(--tutorkai-primary-50), var(--tutorkai-secondary-50))',
-                borderRadius: 'var(--tutorkai-radius-xl)',
-                padding: 'var(--tutorkai-space-4)',
-                minWidth: '120px'
-              }}>
-                <div style={{ marginBottom: 'var(--tutorkai-space-2)' }}>
-                  {lesson.icon === 'school' && <MdSchool size={32} color='var(--tutorkai-primary-600)' />}
-                  {lesson.icon === 'calculate' && <MdCalculate size={32} color='var(--tutorkai-success-600)' />}
-                  {lesson.icon === 'palette' && <MdPalette size={32} color='var(--tutorkai-secondary-600)' />}
-                </div>
-                <div className="tutorkai-body-sm" style={{
-                  fontWeight: 'var(--tutorkai-font-medium)',
-                  color: 'var(--tutorkai-secondary-900)'
-                }}>
-                  {lesson.subject}
-                </div>
-                <div className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-600)' }}>
-                  {lesson.time}
-                </div>
-                <div className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-600)' }}>
-                  {lesson.tutor}
-                </div>
-              </div>
-            ))}
+      {/* Upcoming Lessons with scroll layout */}
+      <section>
+        <h2 className="text-[18px] leading-tight font-bold text-[--tk-text] mb-2 tracking-tight">Upcoming Lessons</h2>
+        <div className="overflow-x-auto snap-x snap-mandatory pr-6 -mr-6 scrollbar-hide pb-2">
+          <div className="flex gap-4">
+          <LessonCard
+            subject="Mathematics"
+            topic="Exponents"
+            tutor="Natsisana"
+            time="2:00 PM"
+            icon={<Grid3X3 size={20} />}
+            onView={() => {}}
+            onMessage={() => {}}
+          />
+          <LessonCard
+            subject="Science"
+            topic="Biology"
+            tutor="Sarah"
+            time="4:00 PM"
+            icon={<Microscope size={20} />}
+            onView={() => {}}
+            onMessage={() => {}}
+          />
+          <LessonCard
+            subject="English"
+            topic="Reading"
+            tutor="John"
+            time="6:00 PM"
+            icon={<BookOpen size={20} />}
+            onView={() => {}}
+            onMessage={() => {}}
+          />
           </div>
         </div>
+      </section>
 
-        {/* My Work */}
-        <div className="tutorkai-card" style={{
-          borderRadius: 'var(--tutorkai-radius-2xl)',
-          padding: 'var(--tutorkai-space-4)'
-        }}>
-          <div className="flex items-center" style={{
-            gap: 'var(--tutorkai-space-2)',
-            marginBottom: 'var(--tutorkai-space-4)'
-          }}>
-            <BookOpen className="w-5 h-5" style={{ color: 'var(--tutorkai-success-600)' }} />
-            <h2 className="tutorkai-heading-4" style={{ color: 'var(--tutorkai-secondary-900)' }}>
-              📝 My Work
-            </h2>
-          </div>
-          
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--tutorkai-space-3)'
-          }}>
-            {assignments.map((assignment) => (
-              <div key={assignment.id} className="rounded-xl" style={{
-                backgroundColor: 'var(--tutorkai-secondary-50)',
-                borderRadius: 'var(--tutorkai-radius-xl)',
-                padding: 'var(--tutorkai-space-4)'
-              }}>
-                <div className="flex items-start justify-between" style={{ marginBottom: 'var(--tutorkai-space-2)' }}>
-                  <div className="flex-1">
-                    <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-2)' }}>
-                      <span className="tutorkai-body" style={{
-                        fontWeight: 'var(--tutorkai-font-medium)',
-                        color: 'var(--tutorkai-secondary-900)'
-                      }}>
-                        {assignment.title}
-                      </span>
-                      {renderStars(assignment.stars)}
-                    </div>
-                    <div className="tutorkai-body-sm" style={{
-                      color: 'var(--tutorkai-secondary-600)',
-                      marginTop: 'var(--tutorkai-space-1)'
-                    }}>
-                      {assignment.description}
-                    </div>
-                  </div>
-                  <div className="tutorkai-caption" style={{
-                    color: 'var(--tutorkai-primary-600)',
-                    fontWeight: 'var(--tutorkai-font-medium)'
-                  }}>
-                    Due: {assignment.due}
-                  </div>
-                </div>
-                
-                <div className="flex" style={{ gap: 'var(--tutorkai-space-2)' }}>
-                  <button className="tutorkai-btn tutorkai-btn-primary tutorkai-body-sm flex items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-                    <MdMenuBook size={16} />
-                    View
-                  </button>
-                  <button className="tutorkai-btn tutorkai-btn-success tutorkai-body-sm flex items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-                    <MdAssignment size={16} />
-                    Mark Done
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* Quick Actions */}
+      <section>
+        <h2 className="text-[18px] leading-tight font-bold text-[--tk-text] mb-2 tracking-tight">Quick Actions</h2>
+        <div className="grid grid-cols-4 gap-4 mt-6">
+          <QuickActionButton label="Book" icon={<BookOpen size={20} />} />
+          <QuickActionButton label="Upload" icon={<Upload size={20} />} />
+          <QuickActionButton label="Download" icon={<Download size={20} />} />
+          <QuickActionButton label="More" icon={<MoreHorizontal size={20} />} />
         </div>
+      </section>
 
-        {/* Quick Actions */}
-        <div className="grid grid-cols-3" style={{ gap: 'var(--tutorkai-space-3)' }}>
-          <button className="tutorkai-card flex flex-col items-center justify-center" style={{
-            borderRadius: 'var(--tutorkai-radius-2xl)',
-            padding: 'var(--tutorkai-space-4)',
-            gap: 'var(--tutorkai-space-2)',
-            minHeight: '100px',
-            cursor: 'pointer',
-            transition: 'transform var(--tutorkai-duration-fast) var(--tutorkai-ease-out)'
-          }}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-            <Calendar className="w-8 h-8" style={{ color: 'var(--tutorkai-primary-600)' }} />
-            <span className="tutorkai-body-sm" style={{
-              fontWeight: 'var(--tutorkai-font-medium)',
-              color: 'var(--tutorkai-secondary-900)',
-              textAlign: 'center'
-            }}>
-              Ask Parent to Book
-            </span>
-          </button>
-          <button className="tutorkai-card flex flex-col items-center justify-center" style={{
-            borderRadius: 'var(--tutorkai-radius-2xl)',
-            padding: 'var(--tutorkai-space-4)',
-            gap: 'var(--tutorkai-space-2)',
-            minHeight: '100px',
-            cursor: 'pointer',
-            transition: 'transform var(--tutorkai-duration-fast) var(--tutorkai-ease-out)'
-          }}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-            <MdRefresh size={32} color='var(--tutorkai-primary-600)' />
-            <span className="tutorkai-body-sm" style={{
-              fontWeight: 'var(--tutorkai-font-medium)',
-              color: 'var(--tutorkai-secondary-900)'
-            }}>
-              Reschedule
-            </span>
-          </button>
-          <button className="tutorkai-card flex flex-col items-center justify-center" style={{
-            borderRadius: 'var(--tutorkai-radius-2xl)',
-            padding: 'var(--tutorkai-space-4)',
-            gap: 'var(--tutorkai-space-2)',
-            minHeight: '100px',
-            cursor: 'pointer',
-            transition: 'transform var(--tutorkai-duration-fast) var(--tutorkai-ease-out)'
-          }}
-          onMouseDown={(e) => e.currentTarget.style.transform = 'scale(0.95)'}
-          onMouseUp={(e) => e.currentTarget.style.transform = 'scale(1)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}>
-            <MdMoreHoriz size={32} color='var(--tutorkai-secondary-600)' />
-            <span className="tutorkai-body-sm" style={{
-              fontWeight: 'var(--tutorkai-font-medium)',
-              color: 'var(--tutorkai-secondary-900)'
-            }}>
-              More
-            </span>
-          </button>
+      {/* My Work */}
+      <section>
+        <h2 className="text-[18px] leading-tight font-bold text-[--tk-text] mb-2 tracking-tight">My Work</h2>
+        <div className="space-y-3">
+          <WorkCard
+            title="School"
+            subtitle="Homework"
+            subject="Math: Integers"
+            due="Tomorrow"
+            icon={<Calculator size={20} />}
+            cardType="school"
+            onView={() => {}}
+            onMarkDone={() => {}}
+          />
+          <WorkCard
+            title="Tutoring"
+            subtitle="worksheet"
+            subject="Math: Integers"
+            due="Friday"
+            icon={<FileText size={20} />}
+            cardType="tutoring"
+            onView={() => {}}
+            onMarkDone={() => {}}
+          />
+          <WorkCard
+            title="School"
+            subtitle="Assignment"
+            subject="Math: Integers"
+            due="Next week"
+            icon={<BookOpen size={20} />}
+            cardType="assignment"
+            onView={() => {}}
+            onMarkDone={() => {}}
+          />
         </div>
+      </section>
 
-        {/* My Progress */}
-        <div className="tutorkai-card" style={{
-          borderRadius: 'var(--tutorkai-radius-2xl)',
-          padding: 'var(--tutorkai-space-4)'
-        }}>
-          <div className="flex items-center" style={{
-            gap: 'var(--tutorkai-space-2)',
-            marginBottom: 'var(--tutorkai-space-4)'
-          }}>
-            <Trophy className="w-5 h-5" style={{ color: 'var(--tutorkai-warning-500)' }} />
-            <h2 className="tutorkai-heading-4" style={{ color: 'var(--tutorkai-secondary-900)' }}>
-              🏆 My Progress
-            </h2>
+      {/* My Progress */}
+      <section>
+        <h2 className="text-[16px] leading-6 font-semibold text-[--tk-text] mb-5 flex items-center gap-2">
+          <Trophy className="w-5 h-5 text-[--tk-yellow-400]" />
+          My Progress
+        </h2>
+        <div className="bg-[--tk-card] rounded-2xl p-5 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-tk-border">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[14px] text-[--tk-muted] font-medium">This week:</span>
+            <span className="text-[15px] font-bold text-[--tk-green-500] tracking-tight">80% (4/5 tasks completed!)</span>
           </div>
           
-          <div style={{ marginBottom: 'var(--tutorkai-space-4)' }}>
-            <div className="flex items-center justify-between" style={{ marginBottom: 'var(--tutorkai-space-2)' }}>
-              <span className="tutorkai-body-sm" style={{
-                fontWeight: 'var(--tutorkai-font-medium)',
-                color: 'var(--tutorkai-secondary-700)'
-              }}>
-                This Week:
-              </span>
-              <span className="tutorkai-body-sm" style={{
-                fontWeight: 'var(--tutorkai-font-bold)',
-                color: 'var(--tutorkai-success-600)'
-              }}>
-                {weeklyProgress}% (5/5 lessons completed!)
-              </span>
+          {/* Progress Bar */}
+          <div className="w-full bg-[--tk-border] rounded-full h-3 mb-4">
+            <div className="bg-gradient-to-r from-[--tk-green-500] to-[--tk-blue-600] h-3 rounded-full transition-all duration-500" style={{ width: '80%' }}></div>
+          </div>
+
+          {/* Achievement badges */}
+          <div className="flex items-center gap-4 mb-5">
+            <div className="flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-[--tk-yellow-400]" />
+              <span className="text-[16px] font-bold text-[--tk-text] tracking-tight">5</span>
             </div>
-            <div className="w-full rounded-full h-3" style={{ backgroundColor: 'var(--tutorkai-secondary-200)' }}>
-              <div 
-                className="h-3 rounded-full transition-all"
-                style={{
-                  background: 'linear-gradient(90deg, var(--tutorkai-success-400), var(--tutorkai-primary-500))',
-                  width: `${weeklyProgress}%`,
-                  transitionDuration: 'var(--tutorkai-duration-slow)'
-                }}
-              ></div>
+            <div className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-[--tk-orange-500]" />
+              <span className="text-[16px] font-bold text-[--tk-text] tracking-tight">3 days</span>
             </div>
           </div>
 
-          <div style={{ marginBottom: 'var(--tutorkai-space-4)' }}>
-            <h3 className="tutorkai-body flex items-center" style={{
-              fontWeight: 'var(--tutorkai-font-medium)',
-              color: 'var(--tutorkai-secondary-900)',
-              marginBottom: 'var(--tutorkai-space-2)'
-            }}>
-              <Star className="w-4 h-4" style={{
-                color: 'var(--tutorkai-warning-500)',
-                marginRight: 'var(--tutorkai-space-1)'
-              }} />
-              Recent Achievements:
-            </h3>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--tutorkai-space-2)'
-            }}>
-              {achievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-center tutorkai-body-sm" style={{
-                  gap: 'var(--tutorkai-space-2)'
-                }}>
-                  <span className="tutorkai-heading-5">{achievement.icon}</span>
-                  <span style={{
-                    fontWeight: 'var(--tutorkai-font-medium)',
-                    color: 'var(--tutorkai-secondary-900)'
-                  }}>
-                    {achievement.title}
-                  </span>
-                  <span style={{ color: 'var(--tutorkai-secondary-600)' }}>
-                    ({achievement.description})
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="rounded-xl" style={{
-            backgroundColor: 'var(--tutorkai-warning-50)',
-            borderRadius: 'var(--tutorkai-radius-xl)',
-            padding: 'var(--tutorkai-space-3)'
-          }}>
-            <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-2)' }}>
-              <MdGpsFixed size={20} color='var(--tutorkai-warning-600)' />
-              <div className="tutorkai-body-sm">
-                <span style={{
-                  fontWeight: 'var(--tutorkai-font-medium)',
-                  color: 'var(--tutorkai-secondary-900)'
-                }}>
-                  Next Goal:
-                </span>
-                <span style={{
-                  color: 'var(--tutorkai-secondary-700)',
-                  marginLeft: 'var(--tutorkai-space-1)'
-                }}>
-                  Complete 10 homework assignments → 🏅
-                </span>
+          {/* Recent Achievements */}
+          <div>
+            <h4 className="text-[15px] font-bold text-[--tk-text] mb-3 flex items-center gap-2 tracking-tight">
+              <Award className="w-5 h-5 text-[--tk-blue-600]" />
+              Recent Achievements
+            </h4>
+            <div className="space-y-2 text-[13px] text-[--tk-muted]">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-3 h-3 text-green-500" />
+                <span>Tutoring: Achieved 80% in your integers mock test</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-3 h-3 text-blue-500" />
+                <span>Schedule: Always on time (attended all lessons this month)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="w-3 h-3 text-orange-500" />
+                <span>School: 90% for maths semester 2 assignment</span>
               </div>
             </div>
           </div>
         </div>
+      </section>
 
-        {/* What I've Been Doing */}
-        <div className="tutorkai-card" style={{
-          borderRadius: 'var(--tutorkai-radius-2xl)',
-          padding: 'var(--tutorkai-space-4)'
-        }}>
-          <h2 className="tutorkai-heading-4" style={{
-            color: 'var(--tutorkai-secondary-900)',
-            marginBottom: 'var(--tutorkai-space-4)'
-          }}>
-            📋 What I've Been Doing
-          </h2>
+      {/* Next Goals */}
+      <section>
+        <h2 className="text-[18px] leading-7 font-bold text-[--tk-text] mb-5 tracking-tight flex items-center gap-2">
+          <Target className="w-5 h-5 text-tk-blue" />
+          Next Goals
+        </h2>
+        <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-5 border border-tk-border shadow-[0_4px_12px_rgba(0,0,0,0.06)]">
+          <div className="flex items-center gap-3 mb-3">
+            <Target className="w-6 h-6 text-tk-blue" />
+            <span className="text-[16px] font-bold text-[--tk-text] tracking-tight">Complete 10 homework assignments</span>
+          </div>
+          <p className="text-[14px] text-tk-muted ml-9 font-medium">You're doing great! Just 6 more to go.</p>
+        </div>
+      </section>
+
+      {/* Recent Activity */}
+      <section>
+        <h2 className="text-[18px] leading-7 font-bold text-[--tk-text] mb-5 tracking-tight">Recent Activity</h2>
+        <div className="space-y-4">
+          <div className="bg-[--tk-card] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-tk-border">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-yellow-50 rounded-2xl flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-yellow-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[16px] font-bold text-[--tk-text] tracking-tight">You completed the math integers worksheet</p>
+                <p className="text-[14px] text-tk-muted mt-1 font-medium">2 hours ago</p>
+              </div>
+            </div>
+          </div>
           
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--tutorkai-space-3)'
-          }}>
-            <div className="rounded-xl" style={{
-              backgroundColor: 'var(--tutorkai-success-50)',
-              borderRadius: 'var(--tutorkai-radius-xl)',
-              padding: 'var(--tutorkai-space-3)'
-            }}>
-              <h3 className="tutorkai-body" style={{
-                fontWeight: 'var(--tutorkai-font-medium)',
-                color: 'var(--tutorkai-secondary-900)',
-                marginBottom: 'var(--tutorkai-space-2)'
-              }}>
-                Today
-              </h3>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--tutorkai-space-2)'
-              }}>
-                <div className="flex items-start" style={{ gap: 'var(--tutorkai-space-2)' }}>
-                  <div className="w-2 h-2 rounded-full" style={{
-                    backgroundColor: 'var(--tutorkai-success-500)',
-                    marginTop: 'var(--tutorkai-space-2)'
-                  }}></div>
-                  <div className="flex-1">
-                    <div className="tutorkai-body-sm flex items-center" style={{
-                      fontWeight: 'var(--tutorkai-font-medium)',
-                      color: 'var(--tutorkai-secondary-900)',
-                      gap: 'var(--tutorkai-space-1)'
-                    }}>
-                      <MdAssignment size={16} color='var(--tutorkai-success-600)' />
-                      Math lesson with Mr. Jones (Great job!)
-                    </div>
-                    <div className="tutorkai-body-sm flex items-center" style={{
-                      color: 'var(--tutorkai-secondary-900)',
-                      gap: 'var(--tutorkai-space-1)'
-                    }}>
-                      <MdMenuBook size={16} color='var(--tutorkai-primary-600)' />
-                      Finished reading worksheet (A+ work!)
-                    </div>
-                  </div>
-                </div>
+          <div className="bg-[--tk-card] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-tk-border">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center">
+                <Star className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[16px] font-bold text-[--tk-text] tracking-tight">You earned a gold star for reading!</p>
+                <p className="text-[14px] text-tk-muted mt-1 font-medium">Yesterday</p>
               </div>
             </div>
+          </div>
 
-            <div className="rounded-xl" style={{
-              backgroundColor: 'var(--tutorkai-primary-50)',
-              borderRadius: 'var(--tutorkai-radius-xl)',
-              padding: 'var(--tutorkai-space-3)'
-            }}>
-              <h3 className="tutorkai-body" style={{
-                fontWeight: 'var(--tutorkai-font-medium)',
-                color: 'var(--tutorkai-secondary-900)',
-                marginBottom: 'var(--tutorkai-space-2)'
-              }}>
-                Yesterday
-              </h3>
-              <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: 'var(--tutorkai-space-2)'
-              }}>
-                <div className="flex items-start" style={{ gap: 'var(--tutorkai-space-2)' }}>
-                  <div className="w-2 h-2 rounded-full" style={{
-                    backgroundColor: 'var(--tutorkai-primary-500)',
-                    marginTop: 'var(--tutorkai-space-2)'
-                  }}></div>
-                  <div className="flex-1">
-                    <div className="tutorkai-body-sm flex items-center" style={{
-                      fontWeight: 'var(--tutorkai-font-medium)',
-                      color: 'var(--tutorkai-secondary-900)',
-                      gap: 'var(--tutorkai-space-1)'
-                    }}>
-                      <MdPalette size={16} color='var(--tutorkai-secondary-600)' />
-                      Art class with Ms. Brown (Loved your drawing!)
-                    </div>
-                    <div className="tutorkai-body-sm flex items-center" style={{
-                      color: 'var(--tutorkai-secondary-900)',
-                      gap: 'var(--tutorkai-space-1)'
-                    }}>
-                      <MdSchool size={16} color='var(--tutorkai-primary-600)' />
-                      Read 5 pages of "The Magic Tree"
-                    </div>
-                  </div>
-                </div>
+          <div className="bg-[--tk-card] rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.06)] border border-tk-border">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center">
+                <Calendar className="w-6 h-6 text-tk-blue" />
+              </div>
+              <div className="flex-1">
+                <p className="text-[16px] font-bold text-[--tk-text] tracking-tight">Attended Math lesson with Ms. Sarah</p>
+                <p className="text-[14px] text-tk-muted mt-1 font-medium">Yesterday at 3:30 PM</p>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* Bottom Navigation */}
-      <div className="bg-white shadow-lg grid grid-cols-5 text-center" style={{
-        borderRadius: 'var(--tutorkai-radius-3xl) var(--tutorkai-radius-3xl) 0 0',
-        padding: 'var(--tutorkai-space-4)',
-        gap: 'var(--tutorkai-space-4)'
-      }}>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{
-            backgroundColor: 'var(--tutorkai-primary-600)',
-            borderRadius: 'var(--tutorkai-radius-xl)'
-          }}>
-            <div className="w-4 h-4 bg-white rounded-sm"></div>
-          </div>
-          <span className="tutorkai-caption" style={{
-            fontWeight: 'var(--tutorkai-font-medium)',
-            color: 'var(--tutorkai-primary-600)'
-          }}>
-            Home
-          </span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <Calendar className="w-8 h-8" style={{ color: 'var(--tutorkai-secondary-400)' }} />
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>
-            Lessons
-          </span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <TrendingUp className="w-8 h-8" style={{ color: 'var(--tutorkai-secondary-400)' }} />
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>
-            Progress
-          </span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <div className="w-8 h-8 flex items-center justify-center tutorkai-heading-5" style={{
-            color: 'var(--tutorkai-secondary-400)'
-          }}>
-            👨‍👩‍👧
-          </div>
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>
-            Family
-          </span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <User className="w-8 h-8" style={{ color: 'var(--tutorkai-secondary-400)' }} />
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>
-            Profile
-          </span>
-        </div>
-      </div>
+      {/* Bottom spacing */}
+      <div className="pb-6"></div>
     </div>
   );
 };

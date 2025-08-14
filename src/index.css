@@ -1,5 +1,52 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import './styles/globals.css';
 @import './styles/design-system.css';
+
+/* TutorKai Design System - Native App Style Colors */
+:root {
+  /* Primary Colors */
+  --tk-blue-600: #007AFF;   /* iOS blue - action / primary */
+  --tk-blue-700: #0056CC;   /* darker blue */
+  --tk-blue-50: #F0F6FF;    /* very light blue */
+
+  /* Lesson & UI Colors */
+  --tk-orange-gradient-start: #FFB74D; /* softer orange start */
+  --tk-orange-gradient-end: #FFA726;   /* softer orange end */
+  --tk-green-500: #34C759;  /* iOS green - success */
+  --tk-yellow-400: #FFCC02; /* iOS yellow - trophy */
+
+  /* Surface & Layout */
+  --tk-surface: #FAFBFC;    /* lighter gray page bg */
+  --tk-card: #FFFFFF;       /* pure white card bg */
+  --tk-border: #E5E5E7;     /* iOS-like border */
+  --tk-text: #1C1C1E;       /* iOS text color - not pure black */
+  --tk-muted: #6E6E73;      /* iOS secondary text */
+}
+
+/* Override default body for mobile-like look */
+html, body, #root {
+  height: 100%;
+  background: #FAFBFC;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Small utility for card shadow rounding */
+.tk-card { @apply bg-white rounded-tk-lg shadow-tk-card; }
+
+/* Hide scrollbar utility */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
 
 body {
   margin: 0;
