@@ -1,6 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Calendar, BookOpen, MessageCircle, TrendingUp, Settings, Bell, User, Plus } from 'lucide-react';
 import { MdStar, MdRocket, MdTrendingUp } from 'react-icons/md';
+import { BottomNavigation, getParentNavigationTabs } from '../common/BottomNavigation';
+import { MobileMessaging } from '../messaging/MobileMessaging';
+import { AppHeader } from '../common/AppHeader';
 
 interface Student {
   id: string;
@@ -45,9 +48,17 @@ interface MonthlyOverview {
 
 interface ParentDashboardProps {
   parentId: string;
+  parent?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+  };
 }
 
-const ParentDashboard: React.FC<ParentDashboardProps> = ({ parentId }) => {
+const ParentDashboard: React.FC<ParentDashboardProps> = ({ parentId, parent }) => {
+  const [activeTab, setActiveTab] = useState('home');
+  const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const profileMenuRef = useRef<HTMLDivElement>(null);
   const [students] = useState<Student[]>([
     {
       id: '1',
@@ -161,6 +172,23 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ parentId }) => {
     ]
   });
 
+  // Handle clicking outside profile menu popup
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
+        setShowProfileMenu(false);
+      }
+    };
+
+    if (showProfileMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showProfileMenu]);
+
   const getProgressColor = (progress: number) => {
     if (progress >= 90) return 'bg-green-500';
     if (progress >= 75) return 'bg-blue-500';
@@ -181,39 +209,84 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ parentId }) => {
     }
   };
 
-  return (
-    <div className="min-h-screen" style={{ backgroundColor: 'var(--tutorkai-neutral-50)' }}>
-      {/* Header */}
-      <div className="bg-white border-b" style={{ 
-        borderColor: 'var(--tutorkai-secondary-200)',
-        padding: 'var(--tutorkai-space-4) var(--tutorkai-space-4) var(--tutorkai-space-3)'
-      }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="tutorkai-heading-4" style={{ color: 'var(--tutorkai-secondary-900)' }}>
-              TutorKai Parent Portal
-            </h1>
-            <p className="tutorkai-body-sm" style={{ color: 'var(--tutorkai-secondary-600)' }}>
-              Welcome back, Sarah Johnson
-            </p>
-          </div>
-          <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-4)' }}>
-            <div className="relative">
-              <Bell className="w-6 h-6" style={{ color: 'var(--tutorkai-secondary-600)' }} />
-              <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full text-xs text-white flex items-center justify-center"
-                   style={{ backgroundColor: 'var(--tutorkai-error-500)' }}>
-                3
-              </div>
+  const renderContent = () => {
+    switch (activeTab) {
+      case 'home':
+        return renderHomeContent();
+      case 'schedule':
+        return renderScheduleContent();
+      case 'messages':
+        return renderMessagesContent();
+      case 'progress':
+        return renderProgressContent();
+      case 'profile':
+        return renderProfileContent();
+      default:
+        return renderHomeContent();
+    }
+  };
+
+  const renderHomeContent = () => (
+    <div className="min-h-screen pb-20" style={{ backgroundColor: 'var(--tutorkai-neutral-50)' }}>
+      {/* App Header */}
+      <AppHeader 
+        firstName={parent?.firstName || 'Sarah'}
+        lastName={parent?.lastName || 'Johnson'}
+        userRole="parent"
+        notificationCount={3}
+        onProfileClick={() => setShowProfileMenu(!showProfileMenu)}
+      />
+
+      {/* Profile Menu */}
+      {showProfileMenu && (
+        <div className="absolute top-20 right-6 z-50">
+          <div 
+            ref={profileMenuRef}
+            className="bg-white shadow-lg rounded-lg border border-gray-200 w-48"
+          >
+            <div className="p-2">
+              <button 
+                onClick={() => {
+                  setActiveTab('profile');
+                  setShowProfileMenu(false);
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+              >
+                View Profile
+              </button>
+              <button 
+                onClick={() => {
+                  // Parent dashboard doesn't have settings tab, could navigate to settings or show message
+                  setShowProfileMenu(false);
+                  console.log('Settings functionality to be implemented');
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded"
+              >
+                Settings
+              </button>
+              <button 
+                onClick={() => {
+                  // Clear any stored authentication data
+                  localStorage.removeItem('authToken');
+                  localStorage.removeItem('userRole');
+                  localStorage.removeItem('userId');
+                  // Redirect to login page
+                  window.location.href = '/login';
+                }}
+                className="w-full text-left px-3 py-2 text-sm hover:bg-gray-100 rounded text-red-600"
+              >
+                Sign Out
+              </button>
             </div>
-            <Settings className="w-6 h-6" style={{ color: 'var(--tutorkai-secondary-600)' }} />
-            <User className="w-6 h-6" style={{ color: 'var(--tutorkai-secondary-600)' }} />
           </div>
         </div>
-        
+      )}
+      
+      <div style={{ padding: 'var(--tutorkai-space-4)' }}>
         {/* Overview Stats */}
         <div className="flex items-center" style={{
-          marginTop: 'var(--tutorkai-space-4)',
-          gap: 'var(--tutorkai-space-6)'
+          gap: 'var(--tutorkai-space-6)',
+          marginBottom: 'var(--tutorkai-space-4)'
         }}>
           <div className="flex items-center" style={{ gap: 'var(--tutorkai-space-2)' }}>
             <span className="tutorkai-body-sm" style={{
@@ -230,11 +303,11 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ parentId }) => {
         </div>
       </div>
 
-      {/* Student Quick Selector */}
-      <div className="bg-white border-b" style={{
-        borderColor: 'var(--tutorkai-secondary-200)',
-        padding: 'var(--tutorkai-space-4)'
-      }}>
+        {/* Student Quick Selector */}
+        <div className="bg-white border-b" style={{
+          borderColor: 'var(--tutorkai-secondary-200)',
+          padding: 'var(--tutorkai-space-4)'
+        }}>
         <div className="flex items-center justify-between" style={{ marginBottom: 'var(--tutorkai-space-3)' }}>
           <h2 className="tutorkai-heading-5">My Students</h2>
           <button className="flex items-center tutorkai-btn-secondary" style={{
@@ -587,40 +660,64 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ parentId }) => {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="bg-white border-t grid grid-cols-5 text-center" style={{
-        borderColor: 'var(--tutorkai-secondary-200)',
-        padding: 'var(--tutorkai-space-4)',
-        gap: 'var(--tutorkai-space-4)'
-      }}>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <div className="w-6 h-6 rounded flex items-center justify-center" style={{
-            backgroundColor: 'var(--tutorkai-primary-600)'
-          }}>
-            <div className="w-3 h-3 bg-white rounded-sm"></div>
-          </div>
-          <span className="tutorkai-caption" style={{
-            fontWeight: 'var(--tutorkai-font-medium)',
-            color: 'var(--tutorkai-primary-600)'
-          }}>Home</span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <Calendar className="w-6 h-6" style={{ color: 'var(--tutorkai-secondary-400)' }} />
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>Schedule</span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <MessageCircle className="w-6 h-6" style={{ color: 'var(--tutorkai-secondary-400)' }} />
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>Messages</span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <TrendingUp className="w-6 h-6" style={{ color: 'var(--tutorkai-secondary-400)' }} />
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>Progress</span>
-        </div>
-        <div className="flex flex-col items-center" style={{ gap: 'var(--tutorkai-space-1)' }}>
-          <User className="w-6 h-6" style={{ color: 'var(--tutorkai-secondary-400)' }} />
-          <span className="tutorkai-caption" style={{ color: 'var(--tutorkai-secondary-400)' }}>Profile</span>
-        </div>
+    </div>
+  );
+
+  const renderScheduleContent = () => (
+    <div className="px-6 py-6 space-y-6 min-h-screen pb-20" style={{ backgroundColor: 'var(--tutorkai-neutral-50)' }}>
+      <h1 className="text-[28px] font-bold text-black mb-6">Schedule</h1>
+      <div className="text-center py-12">
+        <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-600">Your children's schedule will appear here</p>
       </div>
+    </div>
+  );
+
+  const renderMessagesContent = () => (
+    <div className="h-screen">
+      <MobileMessaging 
+        userId={parent?.id || parentId}
+        userRole="admin"
+        userName={parent ? `${parent.firstName} ${parent.lastName}` : 'Parent'}
+      />
+    </div>
+  );
+
+  const renderProgressContent = () => (
+    <div className="px-6 py-6 space-y-6 min-h-screen pb-20" style={{ backgroundColor: 'var(--tutorkai-neutral-50)' }}>
+      <h1 className="text-[28px] font-bold text-black mb-6">Progress</h1>
+      <div className="text-center py-12">
+        <TrendingUp className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+        <p className="text-gray-600">Your children's progress will be tracked here</p>
+      </div>
+    </div>
+  );
+
+  const renderProfileContent = () => (
+    <div className="px-6 py-6 space-y-6 min-h-screen pb-20" style={{ backgroundColor: 'var(--tutorkai-neutral-50)' }}>
+      <h1 className="text-[28px] font-bold text-black mb-6">Profile</h1>
+      <div className="text-center py-12">
+        <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-white font-bold text-xl">
+            {parent ? parent.firstName[0] : 'P'}
+          </span>
+        </div>
+        <p className="text-black font-semibold text-lg">
+          {parent ? `${parent.firstName} ${parent.lastName}` : 'Parent'}
+        </p>
+        <p className="text-gray-600">Parent Account</p>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: 'var(--tutorkai-neutral-50)' }}>
+      {renderContent()}
+      <BottomNavigation 
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        tabs={getParentNavigationTabs()}
+      />
     </div>
   );
 };
