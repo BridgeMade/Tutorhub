@@ -24,6 +24,12 @@ export interface LessonWithDetails extends Lesson {
   tutor_name?: string;
   subject_name?: string;
   topic_name?: string;
+  lesson_plan?: {
+    topic: string;
+    subtopic: string;
+    student_preparation: string;
+    tutor_notes: string;
+  } | null;
 }
 
 export const lessonService = {
@@ -32,19 +38,38 @@ export const lessonService = {
     console.log('🔍 Fetching lessons for user:', userId, userRole);
     
     try {
+      // First, get the student/tutor ID if needed
+      let studentId: string | null = null;
+      let tutorId: string | null = null;
+
+      if (userRole === 'student') {
+        const { data: student } = await supabase
+          .from('students')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+        studentId = student?.id;
+      } else if (userRole === 'tutor') {
+        const { data: tutor } = await supabase
+          .from('tutors')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+        tutorId = tutor?.id;
+      }
+
       let query = supabase.from('lessons').select(`
         *,
         subjects(name),
         topics(name),
-        student:profiles!lessons_student_id_fkey(id, full_name),
-        tutor:profiles!lessons_tutor_id_fkey(id, full_name)
+        lesson_plans(topic, subtopic, student_preparation, tutor_notes)
       `);
 
       // Filter based on user role
-      if (userRole === 'student') {
-        query = query.eq('student_id', userId);
-      } else if (userRole === 'tutor') {
-        query = query.eq('tutor_id', userId);
+      if (userRole === 'student' && studentId) {
+        query = query.eq('student_id', studentId);
+      } else if (userRole === 'tutor' && tutorId) {
+        query = query.eq('tutor_id', tutorId);
       }
       // Admin can see all lessons (no filter)
 
@@ -62,17 +87,40 @@ export const lessonService = {
         return [];
       }
 
+      // Get all unique student and tutor IDs
+      const lessonStudentIds = Array.from(new Set(lessons.map((l: any) => l.student_id).filter(Boolean)));
+      const lessonTutorIds = Array.from(new Set(lessons.map((l: any) => l.tutor_id).filter(Boolean)));
+
+      // Fetch student profiles
+      const { data: students } = await supabase
+        .from('students')
+        .select('id, user_id, profiles!inner(id, full_name)')
+        .in('id', lessonStudentIds);
+
+      // Fetch tutor profiles
+      const { data: tutors } = await supabase
+        .from('tutors')
+        .select('id, user_id, profiles!inner(id, full_name)')
+        .in('id', lessonTutorIds);
+
       // Transform lessons with profile names from joined data
       const transformedLessons = lessons.map((lesson: any) => {
-        const studentProfile = lesson.student;
-        const tutorProfile = lesson.tutor;
+        const student = students?.find((s: any) => s.id === lesson.student_id);
+        const tutor = tutors?.find((t: any) => t.id === lesson.tutor_id);
 
+        const plan = Array.isArray(lesson.lesson_plans) ? lesson.lesson_plans[0] : lesson.lesson_plans;
         return {
           ...lesson,
-          student_name: studentProfile?.full_name || 'Unknown Student',
-          tutor_name: tutorProfile?.full_name || 'Unknown Tutor',
+          student_name: student?.profiles?.full_name || 'Unknown Student',
+          tutor_name: tutor?.profiles?.full_name || 'Unknown Tutor',
           subject_name: lesson.subjects?.name || 'Unknown Subject',
-          topic_name: lesson.topics?.name || undefined
+          topic_name: plan?.topic || lesson.topics?.name || undefined,
+          lesson_plan: plan ? {
+            topic: plan.topic || '',
+            subtopic: plan.subtopic || '',
+            student_preparation: plan.student_preparation || '',
+            tutor_notes: plan.tutor_notes || '',
+          } : null,
         };
       });
 
@@ -88,21 +136,42 @@ export const lessonService = {
   // Get upcoming lessons
   async getUpcomingLessons(userId: string, userRole: 'student' | 'tutor' | 'admin', limit: number = 10): Promise<LessonWithDetails[]> {
     console.log('🔍 Fetching upcoming lessons for user:', userId, userRole);
-    
+
     try {
       const now = new Date().toISOString();
-      
+
+      // First, get the student/tutor ID if needed
+      let studentId: string | null = null;
+      let tutorId: string | null = null;
+
+      if (userRole === 'student') {
+        const { data: student } = await supabase
+          .from('students')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+        studentId = student?.id;
+      } else if (userRole === 'tutor') {
+        const { data: tutor } = await supabase
+          .from('tutors')
+          .select('id')
+          .eq('user_id', userId)
+          .single();
+        tutorId = tutor?.id;
+      }
+
       let query = supabase.from('lessons').select(`
         *,
         subjects(name),
-        topics(name)
+        topics(name),
+        lesson_plans(topic, subtopic, student_preparation, tutor_notes)
       `);
 
       // Filter based on user role
-      if (userRole === 'student') {
-        query = query.eq('student_id', userId);
-      } else if (userRole === 'tutor') {
-        query = query.eq('tutor_id', userId);
+      if (userRole === 'student' && studentId) {
+        query = query.eq('student_id', studentId);
+      } else if (userRole === 'tutor' && tutorId) {
+        query = query.eq('tutor_id', tutorId);
       }
 
       query = query
@@ -123,27 +192,40 @@ export const lessonService = {
         return [];
       }
 
-      // Get profile information for names
-      const studentIds = Array.from(new Set(lessons.map((l: any) => l.student_id)));
-      const tutorIds = Array.from(new Set(lessons.map((l: any) => l.tutor_id)));
-      const allProfileIds = Array.from(new Set([...studentIds, ...tutorIds]));
+      // Get all unique student and tutor IDs
+      const lessonStudentIds = Array.from(new Set(lessons.map((l: any) => l.student_id).filter(Boolean)));
+      const lessonTutorIds = Array.from(new Set(lessons.map((l: any) => l.tutor_id).filter(Boolean)));
 
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, full_name')
-        .in('id', allProfileIds);
+      // Fetch student profiles
+      const { data: students } = await supabase
+        .from('students')
+        .select('id, user_id, profiles!inner(id, full_name)')
+        .in('id', lessonStudentIds);
+
+      // Fetch tutor profiles
+      const { data: tutors } = await supabase
+        .from('tutors')
+        .select('id, user_id, profiles!inner(id, full_name)')
+        .in('id', lessonTutorIds);
 
       // Transform lessons with profile names
       const transformedLessons = lessons.map((lesson: any) => {
-        const studentProfile = profiles?.find((p: any) => p.id === lesson.student_id);
-        const tutorProfile = profiles?.find((p: any) => p.id === lesson.tutor_id);
+        const student = students?.find((s: any) => s.id === lesson.student_id);
+        const tutor = tutors?.find((t: any) => t.id === lesson.tutor_id);
 
+        const plan = Array.isArray(lesson.lesson_plans) ? lesson.lesson_plans[0] : lesson.lesson_plans;
         return {
           ...lesson,
-          student_name: studentProfile?.full_name || 'Unknown Student',
-          tutor_name: tutorProfile?.full_name || 'Unknown Tutor',
+          student_name: student?.profiles?.full_name || 'Unknown Student',
+          tutor_name: tutor?.profiles?.full_name || 'Unknown Tutor',
           subject_name: lesson.subjects?.name || 'Unknown Subject',
-          topic_name: lesson.topics?.name || undefined
+          topic_name: plan?.topic || lesson.topics?.name || undefined,
+          lesson_plan: plan ? {
+            topic: plan.topic || '',
+            subtopic: plan.subtopic || '',
+            student_preparation: plan.student_preparation || '',
+            tutor_notes: plan.tutor_notes || '',
+          } : null,
         };
       });
 
